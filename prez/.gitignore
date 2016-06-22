@@ -1,0 +1,13 @@
+auto/
+*.aux
+*.bbl
+*.blf
+*-blx.bib
+*.dvi
+*.log
+*.nav
+*.out
+*.pdf
+*.run.xml
+*.snm
+*.toc
