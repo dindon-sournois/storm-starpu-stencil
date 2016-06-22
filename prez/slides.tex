@@ -79,12 +79,11 @@
 \end{frame}
 
 \begin{frame}
-\frametitle{Schéma de communication très couplé}
+\frametitle{Stencil computation scheme}
   \begin{itemize}
-  \item Mises à jour des cellules dépendent des cellules voisines
-  \item \textit{Memory bound :} Ratio accès mémoire par calcul est très élevé en général
-  \item Pour les données qui ne tiennent pas en mémoire : recouvrement des transferts par du calcul
-  \item Pas assez de calculs : les GPU et CPU s'affament
+  \item A lot of communication with neighborhood
+  \item \textit{Memory bound :} ratio memory access per computation is high
+  \item We can't always overlap data transfers between nodes with computation
   \end{itemize}
 \end{frame}
 
@@ -115,6 +114,44 @@
 \end{frame}
 
 \begin{frame}
+\frametitle{Off-line Feedback}
+\begin{itemize}
+\item Parsing FxT traces :
+\end{itemize}
+\begin{figure}
+  \center
+  \includegraphics[width=1\linewidth]{figures/locality_attila_ws.png} \\
+  \small{Trace generated during Simgrid execution.} \\
+  \vfill
+  \includegraphics[width=0.3\linewidth]{figures/xpm_legend.pdf}
+  \end{figure}
+%% un peu comme les diagrammes de gantt observable avec vite
+\end{frame}
+
+\begin{frame}
+\frametitle{Off-line Feedback}
+\begin{figure}
+  \center
+  \includegraphics[width=0.6\linewidth]{figures/locality_attila_ws_zoom.png} \\
+  \vfill
+  \includegraphics[width=0.3\linewidth]{figures/xpm_legend.pdf}
+\end{figure}
+\end{frame}
+
+\begin{frame}
+  \frametitle{References}
+\printbibliography
+\end{frame}
+
+\begin{frame}
+  \Huge{\centerline{Thanks for your attention!}}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Annexes}
+\end{frame}
+
+\begin{frame}
   \frametitle{Work stealing scheduling}
   \begin{itemize}
   \vfill
@@ -126,30 +163,6 @@
   \item Add \texttt{STARPU\_LOCALITY} mode to a buffer in a StarPU codelet
   \vfill
   \end{itemize}
-\end{frame}
-
-\begin{frame}
-\frametitle{Off-line Feedback}
-\begin{itemize}
-\item Parsing FxT traces :
-\end{itemize}
-\begin{figure}
-  \center
-  \includegraphics[width=1\linewidth]{figures/locality_attila_ws.png} \\
-  \small{Simgrid generated trace.} \\
-  \vfill
-  \includegraphics[width=0.3\linewidth]{figures/xpm_legend.pdf}
-  \end{figure}
-%% un peu comme les diagrammes de gantt observable avec vite
-\end{frame}
-
-\begin{frame}
-  \frametitle{References}
-\printbibliography
-\end{frame}
-
-\begin{frame}
-  \Huge{\centerline{Thanks for your attention!}}
 \end{frame}
 
 \end{document}

@@ -1,33 +1,3 @@
-intro : ordonnacement de tâches type algebre lineaire dans starpu
-etudier l'ordonnacement de taches d'application stencil
-un exemple de stencil (tas de sable ?)
-schema de communication different
-on s'interesse aux cas ou le probleme se tient pas en memoire gpu, recouvrir les transferts par du calcul devient difficile
-pour cela on pourra se concentrer dans un premier temps sur la localité : en espace (un *PU devra s'occuper des données proches en memoire) et en temps (un *PU devra s'occuper des données deja chargees auparavent)
-cela pour economiser de la bande passante entre cpu et gpu
-pour l'instant (3 semaines) j'ai rajoute a l'outil de trace de starpu la generation d'une image qui nous montre l'execution des taches et les transferts memoires en fonction du temps et des domaines
-un peu a la maniere de vite
-abscisses : le temps
-ordonnees : les handlers de starpu, classes par ordre de register, donc a priori proche d'une decomposition 1D du domaine
-decrire chaque couleurs, faire quelques commentaires
-
-- une intro en deux phrases pour dire que j'étudie l'ordonnancement de
-   d'application stencil dans starpu
- - je sais pas si tout le monde saura ce qu'est un stencil donc
-   peut-être donner un exemple de stencil : on a vu les tas de sable
-   abélien en cours cette année, je peux ressortir ça comme exemple
- - parler de la difficulté à faire du recouvrement des transferts entre
-   process unit par du calcul (pour les stencil)
- - parler de la localité en temps et en espace mémoire, pour économiser
-   la bande passante par exemple
- - enfin, dire que j'ai rajouté une fonction à l'outil qui génère des
-   traces dans starpu, un peu comme vite mais avec un point de vue
-   différent
- - éventuellement montrer une image, faire zoom sur un point précis et
-   expliquer ce qu'il s'y passe. Je peux aussi comparer quelques
-   ordonnanceurs entre eux, mais je pourrai pas sortir une analyse
-   très poussée
-
 pour l'instant le programme locality utilise COMMUTE, et donc ne respecte pas la
 séquence temporelle, c'est pour ça que pour certains morceaux de domaines, ils
 sont calculés très vite sur GPU pour l'ensemble des pas de temps, alors que les
