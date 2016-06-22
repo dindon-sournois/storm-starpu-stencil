@@ -1,7 +1,7 @@
 auto/
 *.aux
 *.bbl
-*.blf
+*.blg
 *-blx.bib
 *.dvi
 *.log
