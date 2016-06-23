@@ -13,7 +13,7 @@
 \usepackage{UBdx}
 \usepackage{graphicx}
 \usepackage{datetime}
-\usepackage[backend=bibtex8]{biblatex}
+\usepackage[sorting=none,backend=bibtex8]{biblatex}
 \usepackage{csquotes}
 \addbibresource{biblio.bib}
 
@@ -67,16 +67,16 @@
   \end{figure}
 \end{frame}
 
-\begin{frame}
-  \frametitle{Abelian sandpiles}
-  %% \begin{itemize}
-  %% \end{itemize}
-  \begin{figure}
-    \center
-    \includegraphics[width=1\linewidth]{figures/sandpile.png} \\
-    \small{Abelian sandpile with max height 4~\cite{sandpile}.}
-  \end{figure}
-\end{frame}
+% \begin{frame}
+%   \frametitle{Abelian sandpiles}
+%   %% \begin{itemize}
+%   %% \end{itemize}
+%   \begin{figure}
+%     \center
+%     \includegraphics[width=1\linewidth]{figures/sandpile.png} \\
+%     \small{Abelian sandpile with max height 4~\cite{sandpile}.}
+%   \end{figure}
+% \end{frame}
 
 \begin{frame}
 \frametitle{Stencil computation scheme}
@@ -113,6 +113,20 @@
   \vfill
 \end{frame}
 
+% \begin{frame}
+%   \frametitle{Work stealing scheduling}
+%   \begin{itemize}
+%   \vfill
+%     %% ws vole d'abord aux voisins: les cpus qui partagent le même cache L2, puis L3,
+%     %% puis sur le même nœud NUMA, etc
+%   \item Flags \texttt{USE\_LOCALITY} and \texttt{USE\_LOCALITY\_TASKS} (both experimental)
+%     \vfill
+%     %% modifications in applications
+%   \item Add \texttt{STARPU\_LOCALITY} mode to a buffer in a StarPU codelet
+%   \vfill
+%   \end{itemize}
+% \end{frame}
+
 \begin{frame}
 \frametitle{Off-line Feedback}
 \begin{itemize}
@@ -121,7 +135,8 @@
 \begin{figure}
   \center
   \includegraphics[width=1\linewidth]{figures/locality_attila_ws.png} \\
-  \small{Trace generated during Simgrid execution.} \\
+  \small{Trace generated during Simgrid execution (scheduler: \texttt{ws}, host:
+    \texttt{attila}).} \\
   \vfill
   \includegraphics[width=0.3\linewidth]{figures/xpm_legend.pdf}
   \end{figure}
@@ -145,24 +160,6 @@
 
 \begin{frame}
   \Huge{\centerline{Thanks for your attention!}}
-\end{frame}
-
-\begin{frame}
-  \frametitle{Annexes}
-\end{frame}
-
-\begin{frame}
-  \frametitle{Work stealing scheduling}
-  \begin{itemize}
-  \vfill
-    %% ws vole d'abord aux voisins: les cpus qui partagent le même cache L2, puis L3,
-    %% puis sur le même nœud NUMA, etc
-  \item Flags \texttt{USE\_LOCALITY} and \texttt{USE\_LOCALITY\_TASKS} (both experimental)
-    \vfill
-    %% modifications in applications
-  \item Add \texttt{STARPU\_LOCALITY} mode to a buffer in a StarPU codelet
-  \vfill
-  \end{itemize}
 \end{frame}
 
 \end{document}
