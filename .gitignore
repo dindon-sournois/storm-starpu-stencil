@@ -1,4 +1,7 @@
 starpu-1.2-stencils/
+!starpu-1.2-stencils/locality_increase_size.gp
+!starpu-1.2-stencils/locality_limit_mem.gp
+!starpu-1.2-stencils/locality_test.sh
 
 _*_.tex
 *.fdb_latexmk
