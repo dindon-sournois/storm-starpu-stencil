@@ -20,4 +20,5 @@ plot "./output/limit_gpu_mem_dmda_500x3.txt" \
      "./output/limit_gpu_mem_lws_loc_tasks_500x3.txt" \
      with linespoints title "lws-loc-tasks" ls 4 lw 2 pt -1, \
      "./output/limit_gpu_mem_cache_oblivious_500x3.txt" \
+     using ($1):($2)/3 \
      with linespoints title "cache-oblivious" ls 5 lw 2 pt -1

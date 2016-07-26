@@ -25,5 +25,5 @@ plot "./output/increase_problem_size_dmda_600.txt" \
      using ($1):($2)/($1) \
      with linespoints title "dmdas no-limit" ls 5 lw 2 pt -1, \
      "./output/increase_problem_size_cache_oblivious_600.txt" \
-     using ($1):($2)/($1) \
+     using ($1):($2)/3/($1) \
      with linespoints title "cache-oblivious" ls 6 lw 2 pt -1
