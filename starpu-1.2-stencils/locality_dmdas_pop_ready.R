@@ -6,9 +6,18 @@ pop <- read.table("output/dmdas_pop_ready.data",
                     check.names=TRUE,
                     header=TRUE)
 
-xmax <- max(pop[4])
+percent <- function(pop){
+total <- pop[[3]]
+value <- pop[[4]]
+100*value/total
+}
+visited <- function(pop){
+pop[[4]]
+}
 
-res <- hist(pop[[4]],
+xmax <- max(visited(pop))
+
+res <- hist(visited(pop),
      main="dmdas ready tasks",
      xlab="Visited",
      border="blue",
