@@ -1,0 +1,40 @@
+* DONE dmda/dmdas xpm 3x/4x plus que de mem dispo
+  CLOSED: [2016-07-29 Fri 14:32]
+* DONE dmdas lors du pop des taches :
+  CLOSED: [2016-07-29 Fri 14:32]
+** choix des taches dont il dispose deja des donnees
+** faire des stats pour savoir le nombre de taches quil parcourt dans la liste
+** combien en moyenne on parcours d'elements dans la liste
+*** ???: la plupart du temps dmdas ne parcourt qu'un élément de la liste,
+*** mais la plupart du temps il n'y en a qu'un seul
+** nb element , histogramme , echelle log
+** axes abscisses : 1 2 4 8 16 ...
+* DONE alterner submit des x pair/impair
+  CLOSED: [2016-07-29 Fri 14:32]
+** enlever le flag W sur les voisins
+*** ???: pourquoi voulait-on faire ça ?
+** cache oblivious devrait rester correct au niveau des dependances
+* DONE on peut utiliser oblivious/3 comme reference ideale
+  CLOSED: [2016-07-29 Fri 14:33]
+*** ???: cache oblivious/3 aussi bien que dmdas
+*** mauvais comportement lorsque ça rentre plus en mémoire,
+*** et là dmdas fait mieux que parallel cache oblivious
+* ou alors on decoupe le domaine en 3 et on soumet les taches en parallele
+** DONE semaphore croisée pour la soumission des taches en parallel pour respecter les dependances
+   CLOSED: [2016-07-29 Fri 14:34]
+** 1 thread de soumission par gpu
+** pour le decoupage on peut regarder :
+*** DONE static sans prendre en compte la charge
+    CLOSED: [2016-07-29 Fri 14:33]
+**** ???: c'est déjà pas bon du tout avec charge équilibré par rapport à dmdas
+*** TODO static avec une charge qui depend de x
+*** TODO dynamique (charge depend de x et t)
+* TODO comment le LRU se comporte
+** quels sont les données evincées
+** LRU + stencil : biblio
+*** optimal : 1 LRU -> cache oblivious
+*** nGPUs LRu -> ???
+* metrique à étudier pour verifier la perf d'un ordonnanceur :
+** temps execution,
+** volume des transferts gpu,
+** overhead (temps passé à ordonnancer les taches)
