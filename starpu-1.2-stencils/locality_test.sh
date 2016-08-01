@@ -96,7 +96,7 @@ function test_increase_problem_size() {
 function test_cache_oblivious() {
     $compile > /dev/null
     cd "build-simgrid-no-fxt"
-    limit_mem=300
+    limit_mem=700
     vector=3
 
     for sched in dmdas
@@ -104,8 +104,13 @@ function test_cache_oblivious() {
         filename=../output/cache_oblivious_"$sched"_"$limit_mem".txt
         echo "# PROBLEM_SIZE (MB) COMPLETION_TIME (ms)" > $filename
     done
+    for opt in regular parallel-submit
+    do
+        filename=../output/cache_oblivious_"$opt"_"$limit_mem".txt
+        echo "# PROBLEM_SIZE (MB) COMPLETION_TIME (ms)" > $filename
+    done
 
-    for (( d=200 ; d<=1000; d+=50 ))
+    for (( d=198 ; d<=1000; d+=48 ))
     do
         problem_size=`expr $d \* $vector`
         for sched in dmdas
@@ -137,10 +142,8 @@ function test_cache_oblivious() {
         #     echo "$problem_size $completed_time" >> $filename
         # done
         cd "../build-simgrid-no-fxt" > /dev/null
-        for opt in regular parallel_submit
+        for opt in regular parallel-submit
         do
-            filename=../output/cache_oblivious_"$opt"_"$limit_mem".txt
-            echo "# PROBLEM_SIZE (MB) COMPLETION_TIME (ms)" > $filename
             echo ; echo "starting cache oblivious $opt $d"
             completed_time=`STARPU_LIMIT_CUDA_MEM=$limit_mem \
             ./tests/datawizard/locality \

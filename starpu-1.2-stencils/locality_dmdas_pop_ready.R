@@ -15,11 +15,11 @@ visited <- function(pop){
 pop[[4]]
 }
 
-xmax <- max(visited(pop))
+xmax <- max(percent(pop))
 
-res <- hist(visited(pop),
+res <- hist(percent(pop),
      main="dmdas ready tasks",
-     xlab="Visited",
+     xlab="Visited/Total",
      border="blue",
      col="green",
      xlim=c(1,100),

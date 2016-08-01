@@ -1,10 +1,20 @@
-starpu-1.2-stencils/
-!starpu-1.2-stencils/locality_dmdas_pop_ready.R
-!starpu-1.2-stencils/locality_increase_size.gp
-!starpu-1.2-stencils/locality_limit_mem.gp
-!starpu-1.2-stencils/locality_test.sh
-
 _*_.tex
 *.fdb_latexmk
 *.fls
 
+starpu-1.2-stencils/.*
+starpu-1.2-stencils/build*
+starpu-1.2-stencils/auto/
+starpu-1.2-stencils/doc/
+starpu-1.2-stencils/examples/
+starpu-1.2-stencils/gcc-plugin/
+starpu-1.2-stencils/include/
+starpu-1.2-stencils/m4/
+starpu-1.2-stencils/mpi/
+starpu-1.2-stencils/sc_hypervisor/
+starpu-1.2-stencils/socl/
+starpu-1.2-stencils/src/
+starpu-1.2-stencils/starpu-top/
+starpu-1.2-stencils/starpufft/
+starpu-1.2-stencils/tests/
+starpu-1.2-stencils/tools/
