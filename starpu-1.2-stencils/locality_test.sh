@@ -1,6 +1,5 @@
 #!/bin/bash
-dirs=" build-simgrid-LOCALITY build-simgrid-LOCALITY-TASKS build-simgrid-BOTH"
-nofxt_dirs="build-simgrid-LOCALITY-no-fxt build-simgrid-LOCALITY-TASKS-no-fxt build-simgrid-BOTH-no-fxt"
+
 host="attila"
 ratio=0.8
 export STARPU_HOSTNAME=$host
@@ -11,6 +10,9 @@ then
 else
     compile=""
 fi
+
+# logs=~/rev/internship/storm/starpu-1.2-stencils/locality_logs.txt
+# rm $logs
 
 function locality() {
     d="build-simgrid$1"
@@ -36,9 +38,6 @@ function test_all_xpm() {
     locality "_BOTH"
 }
 
-# erreur avec :
-# STARPU_HOSTNAME=attila STARPU_SCHED=dmda STARPU_LIMIT_OPENCL_MEM=500 STARPU_LIMIT_CUDA_MEM=500 ./tests/datawizard/locality --domain-size 500 --vector-size 3 > /dev/null && ./tools/starpu_fxt_tools -i /tmp/prof_llucido_0
-
 function test_limit_mem() {
     $compile > /dev/null
     cd "build-simgrid-no-fxt"
@@ -49,16 +48,18 @@ function test_limit_mem() {
     problem_size=`expr $domain \* $vector`
     sched=dmdas
     filename=../output/limit_gpu_mem_"$sched"_"$domain"x"$vector".txt
+    echo $filename
     export STARPU_SCHED=$sched
-    # echo "# MEM_PER_NODE (MB) COMPLETION_TIME (ms)" > $filename
+    echo "# MEM_PER_NODE (MB) COMPLETION_TIME (ms)" > $filename
 
-    for (( m=50 ; m>0 ; m-=50 ))
+    for (( m=1500 ; m>0 ; m-=50 ))
     do
         echo $m
         completed_time=`STARPU_LIMIT_OPENCL_MEM=$m STARPU_LIMIT_CUDA_MEM=$m \
         ./tests/datawizard/locality \
         --domain-size $domain \
         --vector-size $vector \
+        --alternate-submit \
         --silent \
         | grep "completion time" | cut -d \  -f4`
         echo "$m $completed_time" >> $filename
@@ -73,8 +74,8 @@ function test_increase_problem_size() {
     # NOTE: real maxmem = 8294 MB (2833 * 3)
     limit_mem=600
     vector=3
-    sched=lws
-    filename=../output/increase_problem_size_"$sched"_"$limit_mem".txt
+    sched=dmdas
+    filename=../output/increase_problem_size_"$sched"_"alternate"_"$limit_mem".txt
     export STARPU_SCHED=$sched
     echo "# PROBLEM_SIZE (MB) COMPLETION_TIME (ms)" > $filename
 
@@ -85,6 +86,7 @@ function test_increase_problem_size() {
         ./tests/datawizard/locality \
         --domain-size $d \
         --vector-size $vector \
+        --alternate-submit \
         --silent \
         | grep "completion time" | cut -d \  -f4`
         echo "$problem_size $completed_time" >> $filename
@@ -96,76 +98,110 @@ function test_increase_problem_size() {
 function test_cache_oblivious() {
     $compile > /dev/null
     cd "build-simgrid-no-fxt"
-    limit_mem=700
     vector=3
 
-    for sched in dmdas
-    do
-        filename=../output/cache_oblivious_"$sched"_"$limit_mem".txt
-        echo "# PROBLEM_SIZE (MB) COMPLETION_TIME (ms)" > $filename
-    done
-    for opt in regular parallel-submit
-    do
-        filename=../output/cache_oblivious_"$opt"_"$limit_mem".txt
-        echo "# PROBLEM_SIZE (MB) COMPLETION_TIME (ms)" > $filename
-    done
+    for limit_mem in 0 300; do
 
-    for (( d=198 ; d<=1000; d+=48 ))
-    do
-        problem_size=`expr $d \* $vector`
-        for sched in dmdas
-        do
-            echo ; echo "starting $sched $d"
-            export STARPU_SCHED=$sched
-            completed_time=`STARPU_NCPUS=0 STARPU_NCUDA=3 STARPU_NOPENCL=0 STARPU_LIMIT_CUDA_MEM=$limit_mem \
-            ./tests/datawizard/locality \
-            --domain-size $d \
-            --vector-size $vector \
-            --silent \
-            | grep "completion time" | cut -d \  -f4`
-            filename=../output/cache_oblivious_"$sched"_"$limit_mem".txt
-            echo "$problem_size $completed_time" >> $filename
+        for nbgpus in 1 2; do
+            for sched in dmdas; do
+                filename=../output/cache_oblivious_"$nbgpus"_"$sched"_"$limit_mem".txt
+                echo "# PROBLEM_SIZE (MB) COMPLETION_TIME (ms)" > $filename
+            done
         done
-        # sched=lws
-        # export STARPU_SCHED=$sched
-        # for dir in $nofxt_dirs
-        # do
-        #     cd ../$dir > /dev/null
-        #     echo ; echo "starting $sched $dir $d"
-        #     completed_time=`STARPU_NCPUS=0 STARPU_NCUDA=1 STARPU_NOPENCL=0 STARPU_LIMIT_CUDA_MEM=$limit_mem \
-        #     ./tests/datawizard/locality \
-        #     --domain-size $d \
-        #     --vector-size $vector \
-        #     --silent \
-        #     | grep "completion time" | cut -d \  -f4`
-        #     filename=../output/cache_oblivious_"$sched"_"$dir"_"$limit_mem".txt
-        #     echo "$problem_size $completed_time" >> $filename
-        # done
-        cd "../build-simgrid-no-fxt" > /dev/null
-        for opt in regular parallel-submit
-        do
-            echo ; echo "starting cache oblivious $opt $d"
-            completed_time=`STARPU_LIMIT_CUDA_MEM=$limit_mem \
-            ./tests/datawizard/locality \
-            --domain-size $d \
-            --vector-size $vector \
-            --silent \
-            --cache-oblivious \
-            --$opt \
-            | grep "completion time" | cut -d \  -f4`
+        for opt in regular parallel-submit; do
             filename=../output/cache_oblivious_"$opt"_"$limit_mem".txt
-            echo "$problem_size $completed_time" >> $filename
+            echo "# PROBLEM_SIZE (MB) COMPLETION_TIME (ms)" > $filename
+        done
+
+        for (( d=20 ; d<=1000; d+=48 )); do
+            problem_size=`expr $d \* $vector`
+            for nbgpus in 1 2; do
+                for sched in dmdas; do
+                    echo ; echo "starting $sched $d"
+                    export STARPU_SCHED=$sched
+                    completed_time=`STARPU_NCPUS=0 STARPU_NCUDA=$nbgpus STARPU_NOPENCL=0 \
+                                    STARPU_LIMIT_CUDA_MEM=$limit_mem \
+                                    ./tests/datawizard/locality \
+                                    --domain-size $d \
+                                    --vector-size $vector \
+                                    --alternate-submit \
+                                    --silent \
+                                    | grep "completion time" | cut -d \  -f4`
+                    filename=../output/cache_oblivious_"$nbgpus"_"$sched"_"$limit_mem".txt
+                    echo "$problem_size $completed_time" >> $filename
+                done
+            done
+
+            for opt in regular parallel-submit; do
+                echo ; echo "starting cache oblivious $opt $d"
+                completed_time=`STARPU_LIMIT_CUDA_MEM=$limit_mem \
+                                 ./tests/datawizard/locality \
+                                 --domain-size $d \
+                                 --vector-size $vector \
+                                 --silent \
+                                 --alternate-submit \
+                                 --cache-oblivious \
+                                 --$opt \
+                                 | grep "completion time" | cut -d \  -f4`
+                filename=../output/cache_oblivious_"$opt"_"$limit_mem".txt
+                echo "$problem_size $completed_time" >> $filename
+            done
         done
     done
 
-    cd - > /dev/null
+    cd .. > /dev/null
     unset STARPU_SCHED
+}
+
+# function test_cache_oblivious_details() {
+
+# }
+
+function test_prefetch() {
+    $compile > /dev/null
+    cd "build-simgrid/output"
+    vector=3
+    iterations=200
+
+    for domain in 400 1334; do
+    # for domain in 50; do
+        for limit_mem in 0 100; do
+        # for limit_mem in 0; do
+            foldername=d"$domain"_l"$limit_mem"_i"$iterations"/
+            mkdir $foldername 2> /dev/null
+            cd $foldername
+            for opt in regular prefetch-data; do
+                echo ; echo "starting dmdas gpu 2 domain $domain iter $iterations limit $limit_mem $opt"
+                targetname=dmdas_gpu2_"$opt"/
+                mkdir $targetname 2> /dev/null
+                cd $targetname
+
+                STARPU_SCHED=dmdas STARPU_HOSTNAME=attila STARPU_NCPUS=0 \
+                            STARPU_NCUDA=2 STARPU_NOPENCL=0 \
+                            STARPU_LIMIT_CUDA_MEM=$limit_mem \
+                            ../../../tests/datawizard/locality \
+                            --domain-size $domain \
+                            --vector-size $vector \
+                            --alternate-submit \
+                            --silent \
+                            --iterations $iterations \
+                            --$opt \
+                            --cfg=maxmin/precision:0.0001
+                ../../../tools/starpu_fxt_tool -i /tmp/prof_file_llucido_0 -r 0.8
+
+                cd .. > /dev/null
+            done
+            cd .. > /dev/null
+        done
+    done
+    cd ../.. > /dev/null
 }
 
 # test_all_xpm
 # test_limit_mem
 # test_increase_problem_size
-test_cache_oblivious
+test_cache_oblivious && ./locality_cache_oblivious.gp
+test_prefetch
 
 unset STARPU_HOSTNAME
 exit 0

@@ -1,10 +1,17 @@
 #!/bin/env Rscript
 
-pdf(file = "dmdas_pop_ready.pdf")
+args <- commandArgs(trailingOnly = TRUE)
+srcfile <- args[1]
+name <- args[2]
+print(srcfile)
 
-pop <- read.table("output/dmdas_pop_ready.data",
-                    check.names=TRUE,
-                    header=TRUE)
+output <- paste("dmas_pop_ready_", name, sep="")
+output <- paste(output, ".pdf", sep="")
+print(output)
+
+pdf(file = output)
+
+pop <- read.table(srcfile, check.names=TRUE, header=TRUE)
 
 percent <- function(pop){
 total <- pop[[3]]
@@ -15,9 +22,9 @@ visited <- function(pop){
 pop[[4]]
 }
 
-xmax <- max(percent(pop))
+xmax <- max(visited(pop))
 
-res <- hist(percent(pop),
+res <- hist(visited(pop),
      main="dmdas ready tasks",
      xlab="Visited/Total",
      border="blue",

@@ -1,5 +1,3 @@
-* DONE dmda/dmdas xpm 3x/4x plus que de mem dispo
-  CLOSED: [2016-07-29 Fri 14:32]
 * DONE dmdas lors du pop des taches :
   CLOSED: [2016-07-29 Fri 14:32]
 ** choix des taches dont il dispose deja des donnees
@@ -10,19 +8,24 @@
 ** nb element , histogramme , echelle log
 ** axes abscisses : 1 2 4 8 16 ...
 * DONE alterner submit des x pair/impair
-  CLOSED: [2016-07-29 Fri 14:32]
+  CLOSED: [2016-08-05 Fri 09:46]
 ** enlever le flag W sur les voisins
 *** ???: pourquoi voulait-on faire ça ?
+*** sinon c'est pas un stencil
 ** cache oblivious devrait rester correct au niveau des dependances
+** DONE refaire tous les tests avec alternate submit
+   CLOSED: [2016-08-05 Fri 09:45]
 * DONE on peut utiliser oblivious/3 comme reference ideale
   CLOSED: [2016-07-29 Fri 14:33]
 *** ???: cache oblivious/3 aussi bien que dmdas
 *** mauvais comportement lorsque ça rentre plus en mémoire,
 *** et là dmdas fait mieux que parallel cache oblivious
-* ou alors on decoupe le domaine en 3 et on soumet les taches en parallele
+* TODO ou alors on decoupe le domaine en 3 et on soumet les taches en parallele
 ** DONE semaphore croisée pour la soumission des taches en parallel pour respecter les dependances
    CLOSED: [2016-07-29 Fri 14:34]
 ** 1 thread de soumission par gpu
+** DONE refaire tous les tests avec parallel non boggué
+   CLOSED: [2016-08-05 Fri 09:46]
 ** pour le decoupage on peut regarder :
 *** DONE static sans prendre en compte la charge
     CLOSED: [2016-07-29 Fri 14:33]
@@ -38,3 +41,28 @@
 ** temps execution,
 ** volume des transferts gpu,
 ** overhead (temps passé à ordonnancer les taches)
+* TODO diag donnees / iterations
+** DONE traces fxt, changer l'axe des abscisses
+   CLOSED: [2016-08-09 Tue 12:12]
+** TODO axes de temps toutes les 10ms par exemple
+*** une list de handles avec les jobs associés
+* DONE prefetch et stabilisation
+  CLOSED: [2016-08-08 Mon 15:34]
+** pas de prefetch, regarder que ca se stabilise bien au bout de X iterations
+** prefetch pour se debarasser de la partie ou ca se stabilise
+** regarder prefetch dmdas quand ca rentre pas en memoire
+* DONE --cfg=maxmin/precision:0.0001 pour raccourcir la simulation
+  CLOSED: [2016-08-09 Tue 12:11]
+* DONE configure details
+  CLOSED: [2016-08-09 Tue 12:12]
+* TODO facteur 6 ou 20 size / limitmem
+* DONE co_limit300 decaler les x vers la gauche
+  CLOSED: [2016-08-09 Tue 12:12]
+* TODO jouer avec STARPU_BETA = 1.2 par ex
+** retravailler le prefetch: rep de charge
+* DONE rajouter prefetch idle lorsque cache oblivious et alternate submit
+  CLOSED: [2016-08-09 Tue 12:12]
+** 3 type de task :
+*** fetch
+*** prefetc 10 task
+*** prefetch idle 1 task

@@ -15,6 +15,9 @@ plot "./output/increase_problem_size_dmda_600.txt" \
      "./output/increase_problem_size_dmdas_600.txt" \
      using ($1):($2)/($1) \
      with linespoints title "dmdas" ls 2 lw 2 pt -1, \
+     "./output/increase_problem_size_dmdas_alternate_600.txt" \
+     using ($1):($2)/($1) \
+     with linespoints title "dmdas alternate" ls 7 lw 2 pt -1, \
      "./output/increase_problem_size_lws_600.txt" \
      using ($1):($2)/($1) \
      with linespoints title "lws" ls 3 lw 2 pt -1, \

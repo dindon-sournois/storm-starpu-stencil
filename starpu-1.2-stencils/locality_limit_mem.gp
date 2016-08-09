@@ -15,6 +15,8 @@ plot "./output/limit_gpu_mem_dmda_500x3.txt" \
      with linespoints title "dmda" ls 1 lw 2 pt -1, \
      "./output/limit_gpu_mem_dmdas_500x3.txt" \
      with linespoints title "dmdas" ls 2 lw 2 pt -1, \
+     "./output/limit_gpu_mem_dmdas_alternate_500x3.txt" \
+     with linespoints title "dmdas alternate" ls 6 lw 2 pt -1, \
      "./output/limit_gpu_mem_lws_500x3.txt" \
      with linespoints title "lws" ls 3 lw 2 pt -1, \
      "./output/limit_gpu_mem_lws_loc_tasks_500x3.txt" \
