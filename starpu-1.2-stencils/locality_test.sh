@@ -153,9 +153,60 @@ function test_cache_oblivious() {
     unset STARPU_SCHED
 }
 
-# function test_cache_oblivious_details() {
+function test_cache_oblivious_details() {
+    $compile > /dev/null
+    cd "build-simgrid/output"
+    vector=3
+    iterations=50
 
-# }
+    for domain in 68 500; do
+        for limit_mem in 0 100; do
+            foldername=d"$domain"_l"$limit_mem"_i"$iterations"/
+            mkdir $foldername 2> /dev/null
+            cd $foldername
+            echo $foldername
+
+            for nbgpus in 1 2; do
+                for sched in dmdas; do
+                    targetname="$sched"_"$nbgpus"/
+                    mkdir $targetname 2> /dev/null
+                    cd $targetname
+                    echo "starting $sched gpu $nbgpus domain $domain iter $iterations limit $limit_mem $opt"
+                    STARPU_NCPUS=0 STARPU_NCUDA=$nbgpus STARPU_NOPENCL=0 \
+                                STARPU_LIMIT_CUDA_MEM=$limit_mem STARPU_SCHED=$sched \
+                                ../../../tests/datawizard/locality \
+                                --domain-size $domain \
+                                --vector-size $vector \
+                                --alternate-submit \
+                                --silent
+                    ../../../tools/starpu_fxt_tool -i /tmp/prof_file_llucido_0 -r 0.8
+                    cd .. > /dev/null
+                done
+            done
+
+            for opt in regular parallel-submit; do
+                targetname=co_"$opt"/
+                mkdir $targetname 2> /dev/null
+                cd $targetname
+                echo "starting cache oblivious $opt domain $domain iter $iterations limit $limit_mem $opt"
+                STARPU_LIMIT_CUDA_MEM=$limit_mem \
+                                     ../../../tests/datawizard/locality \
+                                     --domain-size $domain \
+                                     --vector-size $vector \
+                                     --alternate-submit \
+                                     --cache-oblivious \
+                                     --$opt \
+                                     --silent
+                ../../../tools/starpu_fxt_tool -i /tmp/prof_file_llucido_0 -r 0.8
+                cd .. > /dev/null
+            done
+
+            cd .. > /dev/null
+        done
+    done
+    cd ../.. > /dev/null
+
+}
 
 function test_prefetch() {
     $compile > /dev/null
@@ -200,8 +251,9 @@ function test_prefetch() {
 # test_all_xpm
 # test_limit_mem
 # test_increase_problem_size
-test_cache_oblivious && ./locality_cache_oblivious.gp
-test_prefetch
+# test_cache_oblivious && ./locality_cache_oblivious.gp
+test_cache_oblivious_details
+# test_prefetch
 
 unset STARPU_HOSTNAME
 exit 0
