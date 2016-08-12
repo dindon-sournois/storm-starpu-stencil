@@ -46,7 +46,7 @@ function test_limit_mem() {
     domain=500
     vector=3
     problem_size=`expr $domain \* $vector`
-    sched=dmdas
+    sched=dmdar
     filename=../output/limit_gpu_mem_"$sched"_"$domain"x"$vector".txt
     echo $filename
     export STARPU_SCHED=$sched
@@ -74,7 +74,7 @@ function test_increase_problem_size() {
     # NOTE: real maxmem = 8294 MB (2833 * 3)
     limit_mem=600
     vector=3
-    sched=dmdas
+    sched=dmdar
     filename=../output/increase_problem_size_"$sched"_"alternate"_"$limit_mem".txt
     export STARPU_SCHED=$sched
     echo "# PROBLEM_SIZE (MB) COMPLETION_TIME (ms)" > $filename
@@ -101,11 +101,15 @@ function test_cache_oblivious() {
     vector=3
 
     for limit_mem in 0 300; do
+    # for limit_mem in 0 ; do
 
         for nbgpus in 1 2; do
-            for sched in dmdas; do
-                filename=../output/cache_oblivious_"$nbgpus"_"$sched"_"$limit_mem".txt
-                echo "# PROBLEM_SIZE (MB) COMPLETION_TIME (ms)" > $filename
+        # for nbgpus in 2; do
+            for sched in dmdar; do
+                for (( beta=0 ; beta <= 5 ; beta+=1 )); do
+                    filename=../output/cache_oblivious_"$nbgpus"_"$sched"_"$limit_mem"_1."$beta".txt
+                    echo "# PROBLEM_SIZE (MB) COMPLETION_TIME (ms)" > $filename
+                done
             done
         done
         for opt in regular parallel-submit; do
@@ -116,19 +120,23 @@ function test_cache_oblivious() {
         for (( d=20 ; d<=1000; d+=48 )); do
             problem_size=`expr $d \* $vector`
             for nbgpus in 1 2; do
-                for sched in dmdas; do
-                    echo ; echo "starting $sched $d"
-                    export STARPU_SCHED=$sched
-                    completed_time=`STARPU_NCPUS=0 STARPU_NCUDA=$nbgpus STARPU_NOPENCL=0 \
+            # for nbgpus in 2; do
+                for sched in dmdar; do
+                    for (( beta=0 ; beta <= 5 ; beta+=1 )); do
+                        echo ; echo "starting $sched domain=$d beta=1.$beta"
+                        export STARPU_SCHED=$sched
+                        completed_time=`STARPU_NCPUS=0 STARPU_NCUDA=$nbgpus STARPU_NOPENCL=0 \
                                     STARPU_LIMIT_CUDA_MEM=$limit_mem \
+                                    STARPU_SCHED_BETA=1.$beta \
                                     ./tests/datawizard/locality \
                                     --domain-size $d \
                                     --vector-size $vector \
                                     --alternate-submit \
                                     --silent \
                                     | grep "completion time" | cut -d \  -f4`
-                    filename=../output/cache_oblivious_"$nbgpus"_"$sched"_"$limit_mem".txt
-                    echo "$problem_size $completed_time" >> $filename
+                        filename=../output/cache_oblivious_"$nbgpus"_"$sched"_"$limit_mem"_1."$beta".txt
+                        echo "$problem_size $completed_time" >> $filename
+                    done
                 done
             done
 
@@ -167,7 +175,7 @@ function test_cache_oblivious_details() {
             echo $foldername
 
             for nbgpus in 1 2; do
-                for sched in dmdas; do
+                for sched in dmdar; do
                     targetname="$sched"_"$nbgpus"/
                     mkdir $targetname 2> /dev/null
                     cd $targetname
@@ -214,20 +222,19 @@ function test_prefetch() {
     vector=3
     iterations=200
 
-    for domain in 400 1334; do
-    # for domain in 50; do
+    # for domain in 400 1334; do
+    for domain in 400; do
         for limit_mem in 0 100; do
-        # for limit_mem in 0; do
             foldername=d"$domain"_l"$limit_mem"_i"$iterations"/
             mkdir $foldername 2> /dev/null
             cd $foldername
             for opt in regular prefetch-data; do
-                echo ; echo "starting dmdas gpu 2 domain $domain iter $iterations limit $limit_mem $opt"
-                targetname=dmdas_gpu2_"$opt"/
+                echo ; echo "starting dmdar gpu 2 domain $domain iter $iterations limit $limit_mem $opt"
+                targetname=dmdar_gpu2_"$opt"/
                 mkdir $targetname 2> /dev/null
                 cd $targetname
 
-                STARPU_SCHED=dmdas STARPU_HOSTNAME=attila STARPU_NCPUS=0 \
+                STARPU_SCHED=dmdar STARPU_HOSTNAME=attila STARPU_NCPUS=0 \
                             STARPU_NCUDA=2 STARPU_NOPENCL=0 \
                             STARPU_LIMIT_CUDA_MEM=$limit_mem \
                             ../../../tests/datawizard/locality \
@@ -251,8 +258,8 @@ function test_prefetch() {
 # test_all_xpm
 # test_limit_mem
 # test_increase_problem_size
-# test_cache_oblivious && ./locality_cache_oblivious.gp
-test_cache_oblivious_details
+test_cache_oblivious && ./locality_cache_oblivious.gp
+# test_cache_oblivious_details
 # test_prefetch
 
 unset STARPU_HOSTNAME

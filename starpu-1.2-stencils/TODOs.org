@@ -24,12 +24,6 @@
 ** 1 thread de soumission par gpu
 ** DONE refaire tous les tests avec parallel non boggué
    CLOSED: [2016-08-05 Fri 09:46]
-** pour le decoupage on peut regarder :
-*** DONE static sans prendre en compte la charge
-    CLOSED: [2016-07-29 Fri 14:33]
-**** ???: c'est déjà pas bon du tout avec charge équilibré par rapport à dmdas
-*** TODO static avec une charge qui depend de x
-*** TODO dynamique (charge depend de x et t)
 * DONE diag donnees / iterations
   CLOSED: [2016-08-09 Tue 16:56]
 ** DONE traces fxt, changer l'axe des abscisses
@@ -72,4 +66,20 @@
    CLOSED: [2016-08-11 Thu 13:44]
 * DONE facteur 6 ou 20 size / limitmem
   CLOSED: [2016-08-11 Thu 13:44]
+
+* DONE / cout func par 2 pour loca.c
+  CLOSED: [2016-08-12 Fri 10:06]
+* DONE nombre de isochrone: racine (n/2)
+  CLOSED: [2016-08-12 Fri 10:22]
 * TODO jouer avec STARPU_BETA = 1.2 par ex
+** rajouter sur les pdf cache_oblivious_*.pdf dmdas_B_1.2 etc
+* TODO sched prio (eager+prio)
+** task priority (based on iter)
+** 4 colors for 8 CPUs (No GPUs)
+* TODO pour le decoupage on peut regarder :
+** DONE static sans prendre en compte la charge
+    CLOSED: [2016-07-29 Fri 14:33]
+*** ???: c'est déjà pas bon du tout avec charge équilibré par rapport à dmdas
+** TODO static avec une charge qui depend de x
+** TODO dynamique (charge depend de x et t)
+* TODO sched modular_heft
