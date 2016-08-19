@@ -1,0 +1,120 @@
+#+LaTeX_CLASS: article
+#+LaTeX_CLASS_OPTIONS: [12pt]
+#+OPTIONS: toc:3
+
+#+LATEX_HEADER: \usepackage{enumitem}
+#+LATEX_HEADER: \setlist[enumerate,itemize]{noitemsep,nolistsep,leftmargin=*}
+
+# I always include this for my bibliographies
+# #+LATEX_HEADER: \usepackage[notes,isbn=false,backend=biber]{biblatex-chicago}
+# #+LATEX_HEADER: \addbibresource{/Users/clarkdonley/Files/Academic/Bibliography/main.bib}
+
+#+TITLE: Rapport de stage
+#+AUTHOR: Loris Lucido
+#+LANGAGE: fr
+#+DATE: <2016-09-05 Mon>
+
+# Nice code-blocks
+#+BEGIN_SRC elisp :noweb no-export :exports results
+  (setq org-latex-minted-options
+    '(("bgcolor" "mintedbg") ("frame" "single") ("framesep" "6pt")
+      ("mathescape" "true") ("fontsize" "\\footnotesize")))
+  nil
+#+END_SRC
+
+* Introduction
+
+** Contexte
+
+*** Le domaine du HPC de manière générale.
+
+*** Ce à quoi s'intéresse l'équipe /STORM/ en particulier.
+*** On pose clairement le problème
+
+** Mon stage, ce que j'ai regardé
+
+*** Ordonnancement et applications stencils
+
+Aliquam erat volutpat. Nunc eleifend leo vitae magna. In id erat non orci
+commodo lobortis. Proin neque massa, cursus ut, gravida ut, lobortis eget,
+lacus. Sed diam. Praesent fermentum tempor tellus. Nullam tempus. Mauris ac
+felis vel velit tristique imperdiet. Donec at pede. Etiam vel neque nec dui
+dignissim bibendum. Vivamus id enim. Phasellus neque orci, porta a, aliquet
+quis, semper a, massa. Phasellus purus. Pellentesque tristique imperdiet tortor.
+Nam euismod tellus id erat.
+
+
+* État de l'art
+
+** On rappelle le contexte et le problème
+
+** Solutions existantes au problème
+
+** Ce qui doit montrer qu'il manque des solutions et donc explique l'intérêt du stage
+Nullam eu ante vel est convallis dignissim. Fusce suscipit, wisi nec facilisis
+facilisis, est dui fermentum leo, quis tempor ligula erat quis odio. Nunc porta
+vulputate tellus. Nunc rutrum turpis sed pede. Sed bibendum. Aliquam posuere.
+Nunc aliquet, augue nec adipiscing interdum, lacus tellus malesuada massa, quis
+varius mi purus non odio. Pellentesque condimentum, magna ut suscipit hendrerit,
+ipsum augue ornare nulla, non luctus diam neque sit amet urna. Curabitur
+vulputate vestibulum lorem. Fusce sagittis, libero non molestie mollis, magna
+orci ultrices dolor, at vulputate neque nulla lacinia eros. Sed id ligula quis
+est convallis tempor. Curabitur lacinia pulvinar nibh. Nam a sapien.
+
+
+* Contribution
+
+** Résumé de la contribution
+
+*** Explication de la contribution (pas de termes techniques)
+
+*** Méthodologie, quels sont les éléments originaux ?
+
+** Éléments d'implémentation
+
+*** Donner un voir deux points importants
+
+*** Choix algorithmiques par exemple ou problèmes techniques importants
+
+    #+BEGIN_SRC c
+
+      int main()
+      {
+          printf("%s\n", VAR);
+          return 0;
+      }
+    #+END_SRC
+
+** Évaluation et validation
+
+*** Expérimentation : montrer et donc expliquer certaines courbes ou images intéressantes
+
+*** Permet d'appuyer la pertinence des travaux présentés
+
+Nullam eu ante vel est convallis dignissim. Fusce suscipit, wisi nec facilisis
+facilisis, est dui fermentum leo, quis tempor ligula erat quis odio. Nunc porta
+vulputate tellus. Nunc rutrum turpis sed pede. Sed bibendum. Aliquam posuere.
+Nunc aliquet, augue nec adipiscing interdum, lacus tellus malesuada massa, quis
+varius mi purus non odio. Pellentesque condimentum, magna ut suscipit hendrerit,
+ipsum augue ornare nulla, non luctus diam neque sit amet urna. Curabitur
+vulputate vestibulum lorem. Fusce sagittis, libero non molestie mollis, magna
+orci ultrices dolor, at vulputate neque nulla lacinia eros. Sed id ligula quis
+est convallis tempor. Curabitur lacinia pulvinar nibh. Nam a sapien.
+
+
+* Conclusion
+
+** Court résumé des points importants
+
+*** Problème initial
+
+*** Contribution
+
+*** Validation
+
+** Perspectives
+
+*** Court terme (faute de temps) : autre solution technique figurant sur l'arbre des solutions, cul-de-sac
+
+*** Long terme : quelles sont les voies d'exploration non envisagées au départ ?
+ eu ante vel est convallis dignissim.  Fusce suscipit, wisi nec facilisis facilisis, est dui fermentum leo, quis tempor ligula erat quis odio.  Nunc porta vulputate tellus.  Nunc rutrum turpis sed pede.  Sed bibendum.  Aliquam posuere.  Nunc aliquet, augue nec adipiscing interdum, lacus tellus malesuada massa, quis varius mi purus non odio.  Pellentesque condimentum, magna ut suscipit hendrerit, ipsum augue ornare nulla, non luctus diam neque sit amet urna.  Curabitur vulputate vestibulum lorem.  Fusce sagittis, libero non molestie mollis, magna orci ultrices dolor, at vulputate neque nulla lacinia eros.  Sed id ligula quis est convallis tempor.  Curabitur lacinia pulvinar nibh.  Nam a sapien.

@@ -49,11 +49,6 @@
 *** fetch
 *** prefetc 10 task
 *** prefetch idle 1 task (lowest priority)
-* TODO comment le LRU se comporte
-** quels sont les données evincées
-** LRU + stencil : biblio
-*** optimal : 1 LRU -> cache oblivious
-*** nGPUs LRu -> ???
 * DONE alterner submit des x pair/impair
   CLOSED: [2016-08-11 Thu 13:44]
 ** enlever le flag W sur les voisins
@@ -71,11 +66,22 @@
   CLOSED: [2016-08-12 Fri 10:06]
 * DONE nombre de isochrone: racine (n/2)
   CLOSED: [2016-08-12 Fri 10:22]
-* TODO jouer avec STARPU_BETA = 1.2 par ex
+* TODO comment le LRU se comporte
+** quels sont les données evincées
+** LRU + stencil : biblio
+*** optimal : 1 LRU -> cache oblivious
+*** nGPUs LRu -> ???
+* DONE jouer avec STARPU_BETA = 1.2 par ex
+  CLOSED: [2016-08-12 Fri 11:35]
 ** rajouter sur les pdf cache_oblivious_*.pdf dmdas_B_1.2 etc
-* TODO sched prio (eager+prio)
-** task priority (based on iter)
-** 4 colors for 8 CPUs (No GPUs)
+* DONE bug cache oblivious parallele au niveau des dep
+  CLOSED: [2016-08-16 Tue 15:39]
+* DONE sched prio (eager+prio)
+  CLOSED: [2016-08-16 Tue 17:09]
+** DONE task priority (based on iter)
+   CLOSED: [2016-08-12 Fri 12:15]
+** DONE 4 colors for 8 CPUs (No GPUs)
+   CLOSED: [2016-08-16 Tue 17:09]
 * TODO pour le decoupage on peut regarder :
 ** DONE static sans prendre en compte la charge
     CLOSED: [2016-07-29 Fri 14:33]

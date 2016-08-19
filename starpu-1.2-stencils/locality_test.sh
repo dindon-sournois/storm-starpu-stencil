@@ -260,7 +260,7 @@ function test_prefetch() {
 # test_increase_problem_size
 test_cache_oblivious && ./locality_cache_oblivious.gp
 # test_cache_oblivious_details
-# test_prefetch
+test_prefetch
 
 unset STARPU_HOSTNAME
 exit 0
