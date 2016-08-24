@@ -1,0 +1,72 @@
+#+LaTeX_CLASS: article
+#+LaTeX_CLASS_OPTIONS: [12pt]
+#+OPTIONS: toc:nil
+
+#+LANGUAGE: fr
+#+LATEX_HEADER: \usepackage[francais]{babel}
+#+LATEX_HEADER: \usepackage[french]{varioref}
+
+#+LATEX_HEADER: \usepackage{soul, color}
+#+LATEX_HEADER: \usepackage{enumitem}
+#+LATEX_HEADER: \setlist[enumerate,itemize]{noitemsep,nolistsep,leftmargin=*}
+
+#+LATEX_HEADER: \usepackage{caption}
+#+LATEX_HEADER: \addto\captionsfrench{\renewcommand{\figurename}{Figure}}
+#+LATEX_HEADER: \addto\captionsfrench{\renewcommand{\tablename}{Table}}
+
+#+LATEX_HEADER: \usepackage[backend=bibtex]{biblatex}
+#+LATEX_HEADER: \usepackage{csquotes}
+#+LaTeX_HEADER: \addbibresource{biblio.bib}
+
+# #+LaTeX_HEADER: \usepackage{minted}
+# #+LaTeX_HEADER: \usemintedstyle{emacs}
+# #+LaTeX_HEADER: \newminted{common-lisp}{fontsize=\footnotesize}
+
+#+LATEX_HEADER: \newcommand{\Title}{Ordonnancement d'application de type stencil sur cluster hybrides CPU/GPU}
+#+LATEX_HEADER: \newcommand{\DueDate}{lundi 5\ septembre\ 2016}
+#+LATEX_HEADER: \newcommand{\Length}{juin - août}
+#+LATEX_HEADER: \newcommand{\Class}{Rapport de Stage optionnel Master 1}
+#+LATEX_HEADER: \newcommand{\Institute}{LaBRI, Équipe Inria Bordeaux Sud-Ouest \textsc{Storm}}
+#+LATEX_HEADER: \newcommand{\University}{Université de Bordeaux~: Sciences et Technologies}
+#+LATEX_HEADER: \newcommand{\Author}{Loris Lucido}
+#+LATEX_HEADER: \newcommand{\Supervisor}{Olivier Aumage, Samuel Thibault}
+
+# #+NAME: setup-minted
+# #+BEGIN_SRC emacs-lisp :exports both :results silent
+#      (setq org-latex-listings 'minted)
+#      (setq org-latex-custom-lang-environments
+#            '(
+#             (emacs-lisp "common-lispcode")
+#              ))
+#      (setq org-latex-minted-options
+#            '(("frame" "lines")
+#              ("fontsize" "\\scriptsize")
+#              ("linenos" "")))
+#      (setq org-latex-to-pdf-process
+#            '("pdflatex -shell-escape -interaction nonstopmode -output-directory %o %f"
+#              "pdflatex -shell-escape -interaction nonstopmode -output-directory %o %f"
+#              "pdflatex -shell-escape -interaction nonstopmode -output-directory %o %f"))
+# #+END_SRC
+
+#+LATEX: \begin{titlepage}
+#+LATEX:   \centering
+#+LATEX:   \includegraphics[width=5cm]{img/logo-u-bordeaux.jpg}
+#+LATEX:     \includegraphics[width=5cm]{img/logo-inria.png}\par\vspace{1cm}
+#+LATEX:   {\scshape\LARGE \University\par}
+#+LATEX:   \vspace{0.5cm}
+#+LATEX:   {\Large \Class\par}
+#+LATEX:   \vfill
+#+LATEX:   {\huge\bfseries \Title\par}
+#+LATEX:   \vfill
+#+LATEX:   {\Large\itshape \Author\par}
+#+LATEX:   \vfill
+#+LATEX:   {Supervisé par~:\par}
+#+LATEX:   {\Supervisor\par}
+#+LATEX:   \vspace{0.5cm}
+#+LATEX:     {\Large\Institute\par}
+#+LATEX:   \vfill
+#+LATEX:   {\large\DueDate\par}
+#+LATEX: \end{titlepage}
+
+#+TOC: headlines 3
+#+LATEX: \clearpage

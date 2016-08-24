@@ -1,106 +1,79 @@
-#+LaTeX_CLASS: article
-#+LaTeX_CLASS_OPTIONS: [12pt]
-#+OPTIONS: toc:3
-
-#+LATEX_HEADER: \usepackage{enumitem}
-#+LATEX_HEADER: \setlist[enumerate,itemize]{noitemsep,nolistsep,leftmargin=*}
-
-# I always include this for my bibliographies
-# #+LATEX_HEADER: \usepackage[notes,isbn=false,backend=biber]{biblatex-chicago}
-# #+LATEX_HEADER: \addbibresource{/Users/clarkdonley/Files/Academic/Bibliography/main.bib}
-
-#+TITLE: Rapport de stage
-#+AUTHOR: Loris Lucido
-#+LANGAGE: fr
-#+DATE: <2016-09-05 Mon>
-
-# Nice code-blocks
-#+BEGIN_SRC elisp :noweb no-export :exports results
-  (setq org-latex-minted-options
-    '(("bgcolor" "mintedbg") ("frame" "single") ("framesep" "6pt")
-      ("mathescape" "true") ("fontsize" "\\footnotesize")))
-  nil
-#+END_SRC
+#+INCLUDE: "~/rev/internship/storm/rapport/header.org"
 
 * Introduction
 
-** Contexte
+** Le domaine du calcul haute performance
+    - paradigme de programmation parallèle en tâches
+    - architecture hétérogène (plusieurs GPUs, plusieurs bancs NUMA...)
+** L'équipe Inria /STORM/
+    - /Runtime/ : donner une définition
+      + composant entre le système d'exploitation et l'utilisateur (libraire
+        d'algèbre linéaire parallèle)
+      + ordonnanceur pour des applications d'algèbre linéaire classique
 
-*** Le domaine du HPC de manière générale.
+** Ordonnancement de tâches pour applications stencils
+    - qu'est-ce qu'une application stencil ?
+    - classe d'algorithmes beaucoup utilisé en simulation
+    - pour discrétiser des phénomènes physiques locaux sur des grilles régulières
+    - on applique une petite fonction (noyau) sur l'ensemble du domaine, de
+      manière itérative (figure [[fig:3D_stencil]])
+    - noyau : chaque cellule est mise à jour en fonction du voisinage
 
-*** Ce à quoi s'intéresse l'équipe /STORM/ en particulier.
-*** On pose clairement le problème
+#+NAME: fig:3D_stencil
+#+CAPTION: Stencil 6-points 3D - La mise à jour d'un élément se fait à partir des 6 éléments voisins cite:6points-stencil.
+#+ATTR_LATEX: :width 0.4\linewidth
+[[file:img/3D_stencil.png]]
 
-** Mon stage, ce que j'ai regardé
+** Schéma de calcul particulier des stencils
+ - Beaucoup de communications avec les voisinage
+    - un ratio accès mémoire par calcul élevé
+    - il devient difficile voir impossible de recouvrir totalement les temps de
+      transferts entre les noeuds mémoires avec du calcul
 
-*** Ordonnancement et applications stencils
+** Comment économiser de la bande passante
+    - Travail sur la localité des données
+      + localité en espace
+      + localité en temps
+** Ce à quoi je me suis intéressé durant le stage
+** État de l'art
 
-Aliquam erat volutpat. Nunc eleifend leo vitae magna. In id erat non orci
-commodo lobortis. Proin neque massa, cursus ut, gravida ut, lobortis eget,
-lacus. Sed diam. Praesent fermentum tempor tellus. Nullam tempus. Mauris ac
-felis vel velit tristique imperdiet. Donec at pede. Etiam vel neque nec dui
-dignissim bibendum. Vivamus id enim. Phasellus neque orci, porta a, aliquet
-quis, semper a, massa. Phasellus purus. Pellentesque tristique imperdiet tortor.
-Nam euismod tellus id erat.
+*** Le problème des applications stencils
+    - On rappelle le contexte et le problème :
+      + Dans le cadre des Runtimes et de la programmation parallèle en tâches
+      + Trouver des solutions d'ordonnancement de tâches stencils
+*** Solutions existantes au problème
+    - Travaux précédents qui ont portés sur l'ordonnancement pour de l'algègre
+      linéaire
+    - assez peu de travax sur les stencils
+    - Parcours cache oblivious
+    - On simule de la localité en donnant des tâches avec des prioritées
+      indexées sur le numéro d'itération
 
+*** il manque donc quelque chose : à expliquer / détailler ici
 
-* État de l'art
-
-** On rappelle le contexte et le problème
-
-** Solutions existantes au problème
-
-** Ce qui doit montrer qu'il manque des solutions et donc explique l'intérêt du stage
-Nullam eu ante vel est convallis dignissim. Fusce suscipit, wisi nec facilisis
-facilisis, est dui fermentum leo, quis tempor ligula erat quis odio. Nunc porta
-vulputate tellus. Nunc rutrum turpis sed pede. Sed bibendum. Aliquam posuere.
-Nunc aliquet, augue nec adipiscing interdum, lacus tellus malesuada massa, quis
-varius mi purus non odio. Pellentesque condimentum, magna ut suscipit hendrerit,
-ipsum augue ornare nulla, non luctus diam neque sit amet urna. Curabitur
-vulputate vestibulum lorem. Fusce sagittis, libero non molestie mollis, magna
-orci ultrices dolor, at vulputate neque nulla lacinia eros. Sed id ligula quis
-est convallis tempor. Curabitur lacinia pulvinar nibh. Nam a sapien.
-
-
-* Contribution
-
+* Contribution du stage
+  
 ** Résumé de la contribution
 
-*** Explication de la contribution (pas de termes techniques)
+ - Comportement des ordonnaceurs de StarPU, 3 métriques
+   + temps d'exécution
+   + surcoût : temps passé à ordonnancer les tâches
+   + volume des transferts gpu/gpu ou cpu/gpu
+ - Pour réduire le volume de com. : travail sur la localité : prototype d'outils de visualisation
+ - Trouver une méthode de référence : face à cache oblivious
 
-*** Méthodologie, quels sont les éléments originaux ?
+** Outils de visualisation
 
-** Éléments d'implémentation
+*** Diagramme de Gantt temps x domaine
+*** Diagramme domaine x itérations
 
-*** Donner un voir deux points importants
-
-*** Choix algorithmiques par exemple ou problèmes techniques importants
-
-    #+BEGIN_SRC c
-
-      int main()
-      {
-          printf("%s\n", VAR);
-          return 0;
-      }
-    #+END_SRC
+** Un autre élément d'implémentation
 
 ** Évaluation et validation
 
 *** Expérimentation : montrer et donc expliquer certaines courbes ou images intéressantes
 
 *** Permet d'appuyer la pertinence des travaux présentés
-
-Nullam eu ante vel est convallis dignissim. Fusce suscipit, wisi nec facilisis
-facilisis, est dui fermentum leo, quis tempor ligula erat quis odio. Nunc porta
-vulputate tellus. Nunc rutrum turpis sed pede. Sed bibendum. Aliquam posuere.
-Nunc aliquet, augue nec adipiscing interdum, lacus tellus malesuada massa, quis
-varius mi purus non odio. Pellentesque condimentum, magna ut suscipit hendrerit,
-ipsum augue ornare nulla, non luctus diam neque sit amet urna. Curabitur
-vulputate vestibulum lorem. Fusce sagittis, libero non molestie mollis, magna
-orci ultrices dolor, at vulputate neque nulla lacinia eros. Sed id ligula quis
-est convallis tempor. Curabitur lacinia pulvinar nibh. Nam a sapien.
-
 
 * Conclusion
 
@@ -117,4 +90,6 @@ est convallis tempor. Curabitur lacinia pulvinar nibh. Nam a sapien.
 *** Court terme (faute de temps) : autre solution technique figurant sur l'arbre des solutions, cul-de-sac
 
 *** Long terme : quelles sont les voies d'exploration non envisagées au départ ?
- eu ante vel est convallis dignissim.  Fusce suscipit, wisi nec facilisis facilisis, est dui fermentum leo, quis tempor ligula erat quis odio.  Nunc porta vulputate tellus.  Nunc rutrum turpis sed pede.  Sed bibendum.  Aliquam posuere.  Nunc aliquet, augue nec adipiscing interdum, lacus tellus malesuada massa, quis varius mi purus non odio.  Pellentesque condimentum, magna ut suscipit hendrerit, ipsum augue ornare nulla, non luctus diam neque sit amet urna.  Curabitur vulputate vestibulum lorem.  Fusce sagittis, libero non molestie mollis, magna orci ultrices dolor, at vulputate neque nulla lacinia eros.  Sed id ligula quis est convallis tempor.  Curabitur lacinia pulvinar nibh.  Nam a sapien.
+
+#+LATEX: \clearpage
+#+LATEX: \printbibliography
