@@ -1,7 +1,6 @@
 #+LaTeX_CLASS: article
 #+LaTeX_CLASS_OPTIONS: [12pt]
 #+OPTIONS: toc:nil
-
 #+LANGUAGE: fr
 #+LATEX_HEADER: \usepackage[francais]{babel}
 #+LATEX_HEADER: \usepackage[french]{varioref}
@@ -48,25 +47,27 @@
 #              "pdflatex -shell-escape -interaction nonstopmode -output-directory %o %f"))
 # #+END_SRC
 
-#+LATEX: \begin{titlepage}
-#+LATEX:   \centering
-#+LATEX:   \includegraphics[width=5cm]{img/logo-u-bordeaux.jpg}
-#+LATEX:     \includegraphics[width=5cm]{img/logo-inria.png}\par\vspace{1cm}
-#+LATEX:   {\scshape\LARGE \University\par}
-#+LATEX:   \vspace{0.5cm}
-#+LATEX:   {\Large \Class\par}
-#+LATEX:   \vfill
-#+LATEX:   {\huge\bfseries \Title\par}
-#+LATEX:   \vfill
-#+LATEX:   {\Large\itshape \Author\par}
-#+LATEX:   \vfill
-#+LATEX:   {Supervisé par~:\par}
-#+LATEX:   {\Supervisor\par}
-#+LATEX:   \vspace{0.5cm}
-#+LATEX:     {\Large\Institute\par}
-#+LATEX:   \vfill
-#+LATEX:   {\large\DueDate\par}
-#+LATEX: \end{titlepage}
+#+BEGIN_LaTeX
+\begin{titlepage}
+  \centering
+  \includegraphics[width=5cm]{img/logo-u-bordeaux.jpg}
+    \includegraphics[width=5cm]{img/logo-inria.png}\par\vspace{1cm}
+  {\scshape\LARGE \University\par}
+  \vspace{0.5cm}
+  {\Large \Class\par}
+  \vfill
+  {\huge\bfseries \Title\par}
+  \vfill
+  {\Large\itshape \Author\par}
+  \vfill
+  {Supervisé par~:\par}
+  {\Supervisor\par}
+  \vspace{0.5cm}
+    {\Large\Institute\par}
+  \vfill
+  {\large\DueDate\par}
+\end{titlepage}
+#+END_LaTeX
 
 #+TOC: headlines 3
 #+LATEX: \clearpage

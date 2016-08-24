@@ -1,4 +1,4 @@
-#+INCLUDE: "~/rev/internship/storm/rapport/header.org"
+#+INCLUDE: "header.org"
 
 * Introduction
 
@@ -14,13 +14,15 @@
 ** Ordonnancement de tâches pour applications stencils
     - qu'est-ce qu'une application stencil ?
     - classe d'algorithmes beaucoup utilisé en simulation
-    - pour discrétiser des phénomènes physiques locaux sur des grilles régulières
+    - pour discrétiser des phénomènes physiques locaux sur des grilles
+      régulières
     - on applique une petite fonction (noyau) sur l'ensemble du domaine, de
       manière itérative (figure [[fig:3D_stencil]])
     - noyau : chaque cellule est mise à jour en fonction du voisinage
 
 #+NAME: fig:3D_stencil
-#+CAPTION: Stencil 6-points 3D - La mise à jour d'un élément se fait à partir des 6 éléments voisins cite:6points-stencil.
+#+CAPTION: Stencil 6-points 3D - La mise à jour d'un élément se fait à partir
+#+CAPTION: des 6 éléments voisins cite:6points-stencil.
 #+ATTR_LATEX: :width 0.4\linewidth
 [[file:img/3D_stencil.png]]
 
