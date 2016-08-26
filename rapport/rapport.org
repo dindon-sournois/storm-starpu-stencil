@@ -12,7 +12,7 @@
       + ordonnanceur pour des applications d'algèbre linéaire classique
 
 ** Ordonnancement de tâches pour applications stencils
-    - qu'est-ce qu'une application stencil ?
+    - qu'est-ce qu'une application stencil
     - classe d'algorithmes beaucoup utilisé en simulation
     - pour discrétiser des phénomènes physiques locaux sur des grilles
       régulières
@@ -27,71 +27,131 @@
 [[file:img/3D_stencil.png]]
 
 ** Schéma de calcul particulier des stencils
- - Beaucoup de communications avec les voisinage
-    - un ratio accès mémoire par calcul élevé
-    - il devient difficile voir impossible de recouvrir totalement les temps de
+ - Beaucoup de communications avec le voisinage
+ - un ratio accès mémoire par calcul élevé
+ - il devient difficile voir impossible de recouvrir totalement les temps de
       transferts entre les noeuds mémoires avec du calcul
+ - montrer un bout de trace vite où est mis en évidence le temps passé idle pour du
+      stencil *???*
 
 ** Comment économiser de la bande passante
+    - on s'intéresse surtout aux cas où on a pas assez de mémoire
     - Travail sur la localité des données
       + localité en espace
       + localité en temps
-** Ce à quoi je me suis intéressé durant le stage
 ** État de l'art
 
-*** Le problème des applications stencils
+*** Les contraintes des applications stencils
     - On rappelle le contexte et le problème :
       + Dans le cadre des Runtimes et de la programmation parallèle en tâches
       + Trouver des solutions d'ordonnancement de tâches stencils
 *** Solutions existantes au problème
-    - Travaux précédents qui ont portés sur l'ordonnancement pour de l'algègre
+    - Travaux précédents qui ont portés sur l'ordonnancement pour de l'algèbre
       linéaire
-    - assez peu de travax sur les stencils
-    - Parcours cache oblivious
-    - On simule de la localité en donnant des tâches avec des prioritées
-      indexées sur le numéro d'itération
-
-*** il manque donc quelque chose : à expliquer / détailler ici
+    - assez peu de travaux sur les stencils *???*
+    - Parcours cache oblivious à la charge de l'application
+    - (On simule de la localité en donnant des tâches avec des priorités
+      croissantes avec le temps, indexées sur le numéro d'iteration)
+    - il manque donc quelque chose : à expliquer / détailler ici
 
 * Contribution du stage
   
 ** Résumé de la contribution
 
- - Comportement des ordonnaceurs de StarPU, 3 métriques
+ - Comportement des ordonnanceurs de StarPU, 3 métriques à considérer
    + temps d'exécution
    + surcoût : temps passé à ordonnancer les tâches
-   + volume des transferts gpu/gpu ou cpu/gpu
- - Pour réduire le volume de com. : travail sur la localité : prototype d'outils de visualisation
- - Trouver une méthode de référence : face à cache oblivious
+   + volume des transferts GPU/GPU ou CPU/GPU
+ - rappel : on s'intéresse surtout aux cas où on a pas assez de mémoire
+ - Pour réduire le volume de communication. : travail sur la localité
+ - Pour observer la localité : prototype d'outils de visualisation
+ - Utiliser une méthode de référence : cache oblivious
 
-** Outils de visualisation
+** Méthode de référence
+*** Ordonnacement : recouvrir les transferts mémoire et localité dans l'espace
+   - deque model data aware ready (dmdar)
+   - figure diagramme de gantt avec plusieurs noeuds et mises en avant des transferts
+   - on explique dmdar (/data aware/ et /ready tasks/)
+   - c'est un ordonnanceurs parmis d'autres, donner des exemples supplémentaires
+     d'ordonnanceurs *???*
+   - plus de transferts en les noeuds mémoire que cache oblivious
+   - /data/ et /ready aware/ on fait du recouvrement
+   - pas beaucoup de quoi recouvrir pour les stencils, à confirmer section évaluation
+*** Algorithme cache oblivious de soumission de tâches
+   - cache oblivious sequentiel cite:frigo-cache-oblivious
+   - on bricole une version parallèle
+   - on limite au mimimum les /cache misses/ ou plutôt les transferts mémoire
+   - méthode idéale même lorsque la mémoire est limité
+   - répartition de charge : peut-être mettre ça dans l'introduction (ETA)
+     + répartition de charge inégale : il faut partitionner à la main le domaine
+     + répartition de charge dynamique (en fonction du temps) : avoir recours à des partitionneurs, c'est pas du tout trivial (mettre références)
 
-*** Diagramme de Gantt temps x domaine
-*** Diagramme domaine x itérations
+** (prototype *???* Outils de visualisation
 
-** Un autre élément d'implémentation
+   On explique à quoi servent les figures, ce qu'elles représentent, ce qu'elles
+permettent de visualiser ici *???* ou bien parti évaluation lors d'une étude de cas
+
+*** Format utilisé
+    - on génère une image au format X-Pixmap
+    - /parsing/ de traces générées durant l'exécution
+*** Diagramme d'exécution du domaine en fonction du temps
+    - comment on détermine le domaine de manière automatique
+*** Diagramme d'exécution du domaine en fonction des itérations
+    - symbolique des isochrones
+
+** Un autre élément d'implémentation ?
 
 ** Évaluation et validation
 
-*** Expérimentation : montrer et donc expliquer certaines courbes ou images intéressantes
+# Expérimentation : montrer et donc expliquer certaines courbes ou images intéressantes
+# Permet d'appuyer la pertinence des travaux présentés
 
-*** Permet d'appuyer la pertinence des travaux présentés
+- Expérimentation simulées à l'aide de /Simgrid/
+    + tout est simulé (architecture de la machine, temps de calcul et transferts)
+    + on gagne du temps, reproductible/déterministe
+    + d'autres résultats sur de vraies machines qui viennent confirmer le comportement simulé *???*
+- Détailler le programme de test locality.c
+    + montrer un exemple simple de stencil
+    + du pseudo code pour dmdar avec soumission alterné
+    + ainsi que pour cache oblivious parallèle mais sans entrer dans les détails
+    de cache oblivious
+
+- courbes dmdas / cache oblivious (avec étude de ce qu'on y voit)
+    + avec et sans limite mémoire
+    + prefetch et sans prefetch *???*
+    + on confirme que cache oblivious s'en sort bien même quand peu de mémoire
+    + dmdar très proche de notre idéal (peut-être trop pour les cas sans limite
+      mémoire *???* est-ce que cache
+    oblivious est vraiment idéal ?)
+    + répartition de charge inégale : cache oblivious à la traine
+      * et si on prédécoupe à la main, est-ce intéressant à montrer *???*
+    + que faut-il en retenir
 
 * Conclusion
-
 ** Court résumé des points importants
 
-*** Problème initial
-
-*** Contribution
-
-*** Validation
+- Problème initial
+  + on s'est intéressé à l'ordonnacement d'application stencil dans le Runtime StarPU
+  + ratio transfert / temps de calcul des stencils, dur de tout recouvrir par du calcul
+  + pour des cas ne tenant pas en mémoire
+- Contribution
+  + outil de visualisation pour comprendre les choix effectués lors de l'ordonnancement
+  + trouver un élément de comparaison pour évaluer les éléments déjà présents (dmdar)
+- Validation
+  + quelques expériences pour vérifier
+  + que faut-il en retenir
 
 ** Perspectives
 
-*** Court terme (faute de temps) : autre solution technique figurant sur l'arbre des solutions, cul-de-sac
+# (faute de temps) : autre solution technique figurant sur l'arbre des solutions, cul-de-sac
+- Court terme
+    + un LRU optimal pour du stencil et pour pour plusieurs GPU
 
-*** Long terme : quelles sont les voies d'exploration non envisagées au départ ?
+# quelles sont les voies d'exploration non envisagées au départ ?
+- Long terme
+    - out of core : CPU <-> disk
+    - pas la même échelle au niveau de la latence
+
 
 #+LATEX: \clearpage
 #+LATEX: \printbibliography

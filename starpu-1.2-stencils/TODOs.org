@@ -71,9 +71,9 @@
 ** LRU + stencil : biblio
 *** optimal : 1 LRU -> cache oblivious
 *** nGPUs LRu -> ???
-* DONE jouer avec STARPU_BETA = 1.2 par ex
-  CLOSED: [2016-08-12 Fri 11:35]
+* TODO jouer avec STARPU_BETA = 1.2 par ex
 ** rajouter sur les pdf cache_oblivious_*.pdf dmdas_B_1.2 etc
+** TODO 0.1 voir 0.01 0.7 0.9 1.1 1.3 10
 * DONE bug cache oblivious parallele au niveau des dep
   CLOSED: [2016-08-16 Tue 15:39]
 * DONE sched prio (eager+prio)
@@ -89,3 +89,14 @@
 ** TODO static avec une charge qui depend de x
 ** TODO dynamique (charge depend de x et t)
 * TODO sched modular_heft
+* TODO generer un exemple + figure + traces
+** pour chaque cas.. chaque algo etc (pour le rapport et comme reference pour l'equipe)
+* TODO references
+** ref externe sur adaptive mesh refinement (AMR)
+** partitionnement pour rep de charge
+* TODO commentaires dans le code, juste les *.c, bien specifier les unites des parametres
+* TODO starpu_bus_stat
+** transferts memoires
+** pourquoi dmdar tient tete a cachoe oblivious malgre les transferts ? recouvrement
+* TODO donner les sources de toutes les courbes
+** bien precifer les conditions d'experimentation
