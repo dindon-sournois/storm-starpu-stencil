@@ -1,18 +1,20 @@
 #+INCLUDE: "header.org"
+# parler du découpage en blocs *???*
+
+* L'équipe Inria /STORM/
 
 * Introduction
-
 ** Le domaine du calcul haute performance
+    - prog parallele plusieurs cpu, plusieurs gpu, plusieurs machines
     - paradigme de programmation parallèle en tâches
     - architecture hétérogène (plusieurs GPUs, plusieurs bancs NUMA...)
-** L'équipe Inria /STORM/
-    - /Runtime/ : donner une définition
-      + composant entre le système d'exploitation et l'utilisateur (libraire
-        d'algèbre linéaire parallèle)
-      + ordonnanceur pour des applications d'algèbre linéaire classique
+** Poser le problème ici
+donner une idee de la solution / la voie choisie
+interessant etudier si le runtime s'en sort tout seul
 
-** Ordonnancement de tâches pour applications stencils
-    - qu'est-ce qu'une application stencil
+* Contexte
+** applications stencils
+*** qu'est-ce qu'une application stencil
     - classe d'algorithmes beaucoup utilisé en simulation
     - pour discrétiser des phénomènes physiques locaux sur des grilles
       régulières
@@ -25,12 +27,29 @@
 #+CAPTION: des 6 éléments voisins cite:6points-stencil.
 #+ATTR_LATEX: :width 0.4\linewidth
 [[file:img/3D_stencil.png]]
+*** on utilise un stencil jouet
+** on fait des taches dans une runtime
 
+*** paradigme de programmation en taches
+*** /Runtime/ : donner une définition
+       + composant entre le système d'exploitation et l'utilisateur (libraire
+         d'algèbre linéaire parallèle)
+       + ordonnanceur pour des applications d'algèbre linéaire classique
+
+** hétérogénéité
+schematiser l'espace memoires des GPUS :
+- pas acces a la main memory
+- chaque GPU a sa memoire
+- il faut donc charger les donnees en GPU
+- pas beaucoup d'espace
+- probleme de bande passante
 ** Schéma de calcul particulier des stencils
+ - decoupage par blocs / taches, schema dep taches precedentes
  - Beaucoup de communications avec le voisinage
  - un ratio accès mémoire par calcul élevé
  - il devient difficile voir impossible de recouvrir totalement les temps de
       transferts entre les noeuds mémoires avec du calcul
+   # si l'on fait un transfert pour chaque itération, sans réutilisation
  - montrer un bout de trace vite où est mis en évidence le temps passé idle pour du
       stencil *???*
 
@@ -44,15 +63,28 @@
 *** Les contraintes des applications stencils
     - On rappelle le contexte et le problème :
       + Dans le cadre des Runtimes et de la programmation parallèle en tâches
+      + interessant etudier si le runtime s'en sort tout seul
       + Trouver des solutions d'ordonnancement de tâches stencils
 *** Solutions existantes au problème
     - Travaux précédents qui ont portés sur l'ordonnancement pour de l'algèbre
       linéaire
     - assez peu de travaux sur les stencils *???*
+      # Peu de travaux sur les stencils dans l'équipe, oui, seulement récemment
+      # avec le projet Aghora, où on a utilisé des priorités pour faire de la
+      # localité de manière crado. Mais c'est par contre très utilisé par
+      # ailleurs, juste pas avec des runtimes, en général les gens font toute la
+      # répartition à la main
     - Parcours cache oblivious à la charge de l'application
+      # oublieux: mais garder aussi le terme anglais et une explication du
+      # sens de l'expression
     - (On simule de la localité en donnant des tâches avec des priorités
       croissantes avec le temps, indexées sur le numéro d'iteration)
+    - chercher stencil GPU out of core, mais souvent fait à la main pas de
+    manière générique
     - il manque donc quelque chose : à expliquer / détailler ici
+      + on sait pas vraiment observer
+      + on veut savoir si on peut faire ça de manière générique, si les outils
+        le permettent deja, on veut aussi evaluer
 
 * Contribution du stage
   
@@ -74,7 +106,18 @@
    - on explique dmdar (/data aware/ et /ready tasks/)
    - c'est un ordonnanceurs parmis d'autres, donner des exemples supplémentaires
      d'ordonnanceurs *???*
-   - plus de transferts en les noeuds mémoire que cache oblivious
+     # - eager qui utilise une seule liste centralisée, avec une variante prio qui
+     # prend les priorités en compte.
+
+     # - work stealing qui distribue les tâches
+     # en fonction de la charge sans se poser de question de localité quand il
+     # n'a pas d'information, et qui ordonnance sur la localité s'il en a, et
+     # fait du work stealing si un CPU/GPU devient idle - plus de transferts en
+     # les noeuds mémoire que cache oblivious
+
+     # - heteroprio (https://hal.inria.fr/hal-00807368) qui est centralisé comme
+     # - eager, mais regarde combien les tâches sont accélérées pour décider # -
+     # - entre CPU et GPU
    - /data/ et /ready aware/ on fait du recouvrement
    - pas beaucoup de quoi recouvrir pour les stencils, à confirmer section évaluation
 *** Algorithme cache oblivious de soumission de tâches
@@ -82,11 +125,19 @@
    - on bricole une version parallèle
    - on limite au mimimum les /cache misses/ ou plutôt les transferts mémoire
    - méthode idéale même lorsque la mémoire est limité
-   - répartition de charge : peut-être mettre ça dans l'introduction (ETA)
+   - charge statique
+*** répartition de charge : peut-être mettre ça dans l'introduction (ETA)
      + répartition de charge inégale : il faut partitionner à la main le domaine
      + répartition de charge dynamique (en fonction du temps) : avoir recours à des partitionneurs, c'est pas du tout trivial (mettre références)
+     + ref AMR
 
 ** (prototype *???* Outils de visualisation
+
+# ce qu'il faudrait expliquer au début de cette section, c'est que là, comme ça,
+# on ne sait pas vraiment ce que dmdar fait de bien ou mal, on a besoin d'outils
+# adaptés pour observer ce qui se passe. Les traces vite montre ce qui se passe,
+# mais la vue n'est pas adaptée au cas du stencil: elles ne montrent pas la
+# localité des données.
 
    On explique à quoi servent les figures, ce qu'elles représentent, ce qu'elles
 permettent de visualiser ici *???* ou bien parti évaluation lors d'une étude de cas
@@ -101,31 +152,52 @@ permettent de visualiser ici *???* ou bien parti évaluation lors d'une étude d
 
 ** Un autre élément d'implémentation ?
 
-** Évaluation et validation
+** Évaluation (et validation) plus tard la validation
 
 # Expérimentation : montrer et donc expliquer certaines courbes ou images intéressantes
 # Permet d'appuyer la pertinence des travaux présentés
 
-- Expérimentation simulées à l'aide de /Simgrid/
+*** Expérimentation simulées à l'aide de /Simgrid/
     + tout est simulé (architecture de la machine, temps de calcul et transferts)
     + on gagne du temps, reproductible/déterministe
-    + d'autres résultats sur de vraies machines qui viennent confirmer le comportement simulé *???*
-- Détailler le programme de test locality.c
+    + on laisse la charge aux autres de faire de vrais tests sur de vrais stencils
+# de toutes façons on utilise déjà un stencils factice, ce n'est pas vraiment
+# utile. Ça sera validé sur vraie machine avec une vraie application plus tard
+*** Détailler le programme de test locality.c
+    + stencil jouet faux stencil fait pas de calcul, attend un temps predettermine
+    + on simule des blocs en disant ce truc la fait 3mo
+    + on arrange la taille des blocs pour que duree transfert = 2 x temps de calcul
+    + y'a aussi des cas ou on a 6 voir 20 fois pas assez de memoire
     + montrer un exemple simple de stencil
     + du pseudo code pour dmdar avec soumission alterné
     + ainsi que pour cache oblivious parallèle mais sans entrer dans les détails
     de cache oblivious
+# indique explicitement que tu as implémenté l'algo cache oblivious tel que
+# décrit dans l'article
 
-- courbes dmdas / cache oblivious (avec étude de ce qu'on y voit)
-    + avec et sans limite mémoire
-    + prefetch et sans prefetch *???*
+*** performances courbes dmdas / cache oblivious (avec description de ce qu'on y voit)
+
+# pour chaque section suivantes choisir la bonne visualisation pour illustrer le
+# propos
+*** avec et sans limite mémoire
+# sans limite mémoire, cache oblivious est idéal a priori: on paie seulement le
+# coût des tous premiers chargements, après le gpu est occupé à 100% du temps.
+*** prefetch et sans prefetch *???*
     + on confirme que cache oblivious s'en sort bien même quand peu de mémoire
     + dmdar très proche de notre idéal (peut-être trop pour les cas sans limite
       mémoire *???* est-ce que cache
     oblivious est vraiment idéal ?)
-    + répartition de charge inégale : cache oblivious à la traine
+    # répartition de charge: je dirais d'en faire une section à part, pour
+    # garder dans un premier temps un cas simple, pour montrer "on fait pas loin
+    # d'aussi bien que cache oblivious", et puis ensuite "ah ben en fait c'est
+    # beaucoup mieux"
+*** répartition de charge inégale : cache oblivious à la traine
       * et si on prédécoupe à la main, est-ce intéressant à montrer *???*
-    + que faut-il en retenir
+      # c'est intéressant de montrer qu'en prédécoupant à la main on retrouve un
+      # équilibre de charge, oui, mais là on enfonce le clou en utilisant une
+      # répartition de charge dynamique
+*** cache oblivious mirroir ou pas mirroir
+*** que faut-il en retenir
 
 * Conclusion
 ** Court résumé des points importants
@@ -145,13 +217,24 @@ permettent de visualiser ici *???* ou bien parti évaluation lors d'une étude d
 
 # (faute de temps) : autre solution technique figurant sur l'arbre des solutions, cul-de-sac
 - Court terme
-    + un LRU optimal pour du stencil et pour pour plusieurs GPU
+  + un LRU optimal pour du stencil et pour pour plusieurs GPU
+  + validation avec stencil 2D sur de vraies machines pour l'evaluation
 
 # quelles sont les voies d'exploration non envisagées au départ ?
 - Long terme
-    - out of core : CPU <-> disk
-    - pas la même échelle au niveau de la latence
-
+  - projet Hibox avec airbus pour algebre lineaire compressée
+    + out of core : CPU <-> disk
+    + pas la même échelle au niveau de la latence
+  - visualisation de stencil en 2D, 3D ou ND
+    + faire N figures ? faire un film ?
+    + travaux de questionnement de la visualisation pour l'equipe grenoble Polaris
+      (vinicius ref (vite))
+  - charge dynamique : repartionnement
+  - stencil MPI
+    + redistribution des données
+    + pas de petit transfert cell par cell (enorme latence)
+  - detecter convergence stencil non pas au niveau applicatif (barriere) dans
+    dans starpu
 
 #+LATEX: \clearpage
 #+LATEX: \printbibliography

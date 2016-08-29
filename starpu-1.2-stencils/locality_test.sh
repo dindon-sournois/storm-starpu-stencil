@@ -1,6 +1,6 @@
 #!/bin/bash
 
-results=where_to_check.txt
+results=~/rev/internship/storm/starpu-1.2-stencils/where_to_check.txt
 echo CREATED DIRS : > "$results"
 host="attila"
 ratio=0.8
@@ -100,6 +100,7 @@ fi
 function test_cache_oblivious() {
     $compile > /dev/null
     cd "build-simgrid-no-fxt" || exit
+    iter=200
     vector=3
 
     for limit_mem in 0 300; do
@@ -109,7 +110,7 @@ function test_cache_oblivious() {
         # for nbgpus in 2; do
             for sched in dmdar; do
                 for beta in 0.1 0.6 0.8 1 1.2 1.4 10; do
-                    filename=../output/cache_oblivious_"$nbgpus"_"$sched"_"$limit_mem"_1."$beta".txt
+                    filename=../output/cache_oblivious_"$nbgpus"_"$sched"_"$limit_mem"_"$beta".txt
                     echo "# PROBLEM_SIZE (MB) COMPLETION_TIME (ms)" > $filename
                 done
             done
@@ -122,20 +123,25 @@ function test_cache_oblivious() {
         for (( d=20 ; d<=1000; d+=48 )); do
             problem_size=`expr $d \* $vector`
             for nbgpus in 1 2; do
-            # for nbgpus in 2; do
                 for sched in dmdar; do
-                    for (( beta=0 ; beta <= 5 ; beta+=1 )); do
-                        echo ; echo "starting $sched domain=$d beta=1.$beta"
-                        export STARPU_SCHED=$sched
-                        completed_time=`STARPU_NCPUS=0 STARPU_NCUDA=$nbgpus STARPU_NOPENCL=0 \
+                    export STARPU_SCHED=$sched
+                    completed_time="STARPU_NCPUS=0 STARPU_NCUDA=$nbgpus STARPU_NOPENCL=0 \
                                     STARPU_LIMIT_CUDA_MEM=$limit_mem \
-                                    STARPU_SCHED_BETA=1.$beta \
+                                    STARPU_SCHED_BETA=$beta \
                                     ./tests/datawizard/locality \
                                     --domain-size $d \
                                     --vector-size $vector \
                                     --alternate-submit \
+                                    --iterations=$iter \
                                     --silent \
-                                    | grep "completion time" | cut -d \  -f4`
+                                    | grep \"completion time\" | cut -d \  -f4"
+                    if [[ "$nbgpus" -eq 1 ]]; then
+                        betas = "1"
+                    else
+                        betas = "0.1 0.6 0.8 1 1.2 1.4 10"
+                    fi
+                    for beta in $betas; do
+                        echo ; echo "starting $sched domain=$d beta=$beta"
                         filename=../output/cache_oblivious_"$nbgpus"_"$sched"_"$limit_mem"_1."$beta".txt
                         echo "$problem_size $completed_time" >> $filename
                     done
@@ -144,15 +150,16 @@ function test_cache_oblivious() {
 
             for opt in regular parallel-submit; do
                 echo ; echo "starting cache oblivious $opt $d"
-                completed_time=`STARPU_LIMIT_CUDA_MEM=$limit_mem \
+                completed_time=$(STARPU_LIMIT_CUDA_MEM=$limit_mem \
                                  ./tests/datawizard/locality \
                                  --domain-size $d \
                                  --vector-size $vector \
                                  --silent \
                                  --alternate-submit \
+                                 --iterations=$iter \
                                  --cache-oblivious \
                                  --$opt \
-                                 | grep "completion time" | cut -d \  -f4`
+                                 | grep "completion time" | cut -d \  -f4)
                 filename=../output/cache_oblivious_"$opt"_"$limit_mem".txt
                 echo "$problem_size $completed_time" >> $filename
             done
@@ -171,17 +178,17 @@ function test_cache_oblivious_details() {
 
     for domain in 400; do
         for limit_mem in 0 100; do
-            foldername=d"$domain"_l"$limit_mem"_i"$iterations"/
+            foldername=d"$domain"_l"$limit_mem"_i"$iter"/
             mkdir $foldername 2> /dev/null
-            cd $foldername && cat $foldername >> "$results"
+            cd $foldername && echo $foldername >> "$results"
             echo $foldername
 
             for nbgpus in 1 2; do
                 for sched in dmdar; do
                     targetname="$sched"_gpu"$nbgpus"/
                     mkdir $targetname 2> /dev/null
-                    cd $targetname && cat $targetname >> "$results"
-                    echo "starting $sched gpu $nbgpus domain $domain iter $iterations limit $limit_mem $opt"
+                    cd $targetname && echo $targetname >> "$results"
+                    echo "starting $sched gpu $nbgpus domain $domain iter $iter limit $limit_mem $opt"
                     STARPU_NCPUS=0 STARPU_NCUDA=$nbgpus STARPU_NOPENCL=0 \
                                 STARPU_LIMIT_CUDA_MEM=$limit_mem STARPU_SCHED=$sched \
                                 ../../../tests/datawizard/locality \
@@ -199,8 +206,8 @@ function test_cache_oblivious_details() {
                 [[ "$opt" == "regular" ]] && nbgpus=1 || nbgpus=2
                 targetname=co_gpu"$nbgpus"/
                 mkdir $targetname 2> /dev/null
-                cd $targetname && cat $targetname >> "$results"
-                echo "starting cache oblivious $opt domain $domain iter $iterations limit $limit_mem $opt"
+                cd $targetname && echo $targetname >> "$results"
+                echo "starting cache oblivious $opt domain $domain iter $iter limit $limit_mem $opt"
                 STARPU_LIMIT_CUDA_MEM=$limit_mem \
                                      ../../../tests/datawizard/locality \
                                      --domain-size $domain \
@@ -225,19 +232,19 @@ function test_prefetch() {
     $compile > /dev/null
     cd "build-simgrid/output" || exit
     vector=3
-    iterations=200
+    iter=200
 
     # for domain in 400 1334; do
     for domain in 400; do
         for limit_mem in 0 100; do
-            foldername=d"$domain"_l"$limit_mem"_i"$iterations"/
+            foldername=d"$domain"_l"$limit_mem"_i"$iter"/
             mkdir $foldername 2> /dev/null
-            cd $foldername && cat $foldername >> "$results"
+            cd $foldername && echo $foldername >> "$results"
             for opt in regular prefetch-data; do
-                echo ; echo "starting dmdar gpu 2 domain $domain iter $iterations limit $limit_mem $opt"
+                echo ; echo "starting dmdar gpu 2 domain $domain iter $iter limit $limit_mem $opt"
                 targetname=dmdar_gpu2_"$opt"/
                 mkdir $targetname 2> /dev/null
-                cd $targetname && cat $targetname >> "$results"
+                cd $targetname && echo $targetname >> "$results"
 
                 STARPU_SCHED=dmdar STARPU_HOSTNAME=attila STARPU_NCPUS=0 \
                             STARPU_NCUDA=2 STARPU_NOPENCL=0 \
@@ -247,7 +254,7 @@ function test_prefetch() {
                             --vector-size $vector \
                             --alternate-submit \
                             --silent \
-                            --iterations $iterations \
+                            --iterations=$iter \
                             --$opt \
                             --cfg=maxmin/precision:0.0001
                 ../../../tools/starpu_fxt_tool -i /tmp/prof_file_llucido_0 -r "$ratio"
@@ -260,12 +267,54 @@ function test_prefetch() {
     cd ../.. > /dev/null
 }
 
+function test_prio() {
+    $compile > /dev/null
+    cd "build-simgrid/output" || exit
+    vector=3
+    iter=200
+
+    for domain in 400; do
+        for limit_mem in 0 100; do
+            foldername=d"$domain"_l"$limit_mem"_i"$iter"/
+            mkdir $foldername 2> /dev/null
+            cd $foldername && echo $foldername >> "$results"
+            for nbcpus in 1 2 4; do
+                for sched in prio eager; do
+                    echo ; echo "starting $sched cpu $nbcpus domain $domain iter $iter limit $limit_mem $opt"
+                    targetname="$sched"_cpu"$nbcpus"/
+                    mkdir $targetname 2> /dev/null
+                    cd $targetname && echo $targetname >> "$results"
+
+                    STARPU_SCHED=$sched STARPU_HOSTNAME=attila STARPU_NCPUS=$nbcpus \
+                    STARPU_MIN_PRIO=0 STARPU_MAX_PRIO=$iter \
+                    STARPU_NCUDA=0 STARPU_NOPENCL=0 \
+                                STARPU_LIMIT_CUDA_MEM=$limit_mem \
+                                ../../../tests/datawizard/locality \
+                                --domain-size $domain \
+                                --vector-size $vector \
+                                --alternate-submit \
+                                --silent \
+                                --iterations=$iter \
+                                --priority-submit \
+                                --cfg=maxmin/precision:0.0001
+                    ../../../tools/starpu_fxt_tool -i /tmp/prof_file_llucido_0 -r "$ratio" -colorize-cpus
+
+                    cd .. > /dev/null
+                done
+            done
+            cd .. > /dev/null
+        done
+    done
+    cd ../.. > /dev/null
+}
 # test_all_xpm
 # test_limit_mem
 # test_increase_problem_size
-test_cache_oblivious && ./locality_cache_oblivious.gp
-test_cache_oblivious_details
-test_prefetch
+
+# test_cache_oblivious && ./locality_cache_oblivious.gp
+# test_cache_oblivious_details
+# test_prefetch
+test_prio
 
 unset STARPU_HOSTNAME
 exit 0

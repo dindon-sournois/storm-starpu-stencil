@@ -40,21 +40,24 @@ plot \
      "./output/cache_oblivious_2_dmdar_300_1.0.txt" \
      using ($1):($2)/($1) \
      with linespoints title "dmdar 2 GPU beta=1.0" ls 2 lw 2 pt 2, \
-     "./output/cache_oblivious_2_dmdar_300_1.1.txt" \
-     using ($1):($2)/($1) \
-     with linespoints title "dmdar 2 GPU beta=1.1" ls 3 lw 2 pt 3, \
      "./output/cache_oblivious_2_dmdar_300_1.2.txt" \
      using ($1):($2)/($1) \
-     with linespoints title "dmdar 2 GPU beta=1.2" ls 4 lw 2 pt 3, \
-     "./output/cache_oblivious_2_dmdar_300_1.3.txt" \
-     using ($1):($2)/($1) \
-     with linespoints title "dmdar 2 GPU beta=1.3" ls 5 lw 2 pt 3, \
+     with linespoints title "dmdar 2 GPU beta=1.2" ls 3 lw 2 pt -1, \
      "./output/cache_oblivious_2_dmdar_300_1.4.txt" \
      using ($1):($2)/($1) \
-     with linespoints title "dmdar 2 GPU beta=1.4" ls 6 lw 2 pt 3, \
-     "./output/cache_oblivious_2_dmdar_300_1.5.txt" \
+     with linespoints title "dmdar 2 GPU beta=1.4" ls 4 lw 2 pt -1, \
+     "./output/cache_oblivious_2_dmdar_300_10.txt" \
      using ($1):($2)/($1) \
-     with linespoints title "dmdar 2 GPU beta=1.5" ls 7 lw 2 pt 3, \
+     with linespoints title "dmdar 2 GPU beta=10" ls 5 lw 2 pt -1, \
+     "./output/cache_oblivious_2_dmdar_300_0.8.txt" \
+     using ($1):($2)/($1) \
+     with linespoints title "dmdar 2 GPU beta=0.8" ls 6 lw 2 pt -1, \
+     "./output/cache_oblivious_2_dmdar_300_0.6.txt" \
+     using ($1):($2)/($1) \
+     with linespoints title "dmdar 2 GPU beta=0.6" ls 7 lw 2 pt -1, \
+     "./output/cache_oblivious_2_dmdar_300_0.1.txt" \
+     using ($1):($2)/($1) \
+     with linespoints title "dmdar 2 GPU beta=0.1" ls 8 lw 2 pt -1, \
 
 
 set output 'cache_oblivious_gpu2_limit0.pdf'
@@ -67,18 +70,21 @@ plot \
      "./output/cache_oblivious_2_dmdar_0_1.0.txt" \
      using ($1):($2)/($1) \
      with linespoints title "dmdar 2 GPU beta=1.0" ls 2 lw 2 pt 2, \
-     "./output/cache_oblivious_2_dmdar_0_1.1.txt" \
-     using ($1):($2)/($1) \
-     with linespoints title "dmdar 2 GPU beta=1.1" ls 3 lw 2 pt 3, \
      "./output/cache_oblivious_2_dmdar_0_1.2.txt" \
      using ($1):($2)/($1) \
-     with linespoints title "dmdar 2 GPU beta=1.2" ls 4 lw 2 pt 3, \
-     "./output/cache_oblivious_2_dmdar_0_1.3.txt" \
-     using ($1):($2)/($1) \
-     with linespoints title "dmdar 2 GPU beta=1.3" ls 5 lw 2 pt 3, \
+     with linespoints title "dmdar 2 GPU beta=1.2" ls 3 lw 2 pt -1, \
      "./output/cache_oblivious_2_dmdar_0_1.4.txt" \
      using ($1):($2)/($1) \
-     with linespoints title "dmdar 2 GPU beta=1.4" ls 6 lw 2 pt 3, \
-     "./output/cache_oblivious_2_dmdar_0_1.5.txt" \
+     with linespoints title "dmdar 2 GPU beta=1.4" ls 4 lw 2 pt -1, \
+     "./output/cache_oblivious_2_dmdar_0_10.txt" \
      using ($1):($2)/($1) \
-     with linespoints title "dmdar 2 GPU beta=1.5" ls 7 lw 2 pt 3, \
+     with linespoints title "dmdar 2 GPU beta=10" ls 5 lw 2 pt -1, \
+     "./output/cache_oblivious_2_dmdar_0_0.8.txt" \
+     using ($1):($2)/($1) \
+     with linespoints title "dmdar 2 GPU beta=0.8" ls 6 lw 2 pt -1, \
+     "./output/cache_oblivious_2_dmdar_0_0.6.txt" \
+     using ($1):($2)/($1) \
+     with linespoints title "dmdar 2 GPU beta=0.6" ls 7 lw 2 pt -1, \
+     "./output/cache_oblivious_2_dmdar_0_0.1.txt" \
+     using ($1):($2)/($1) \
+     with linespoints title "dmdar 2 GPU beta=0.1" ls 8 lw 2 pt -1, \
