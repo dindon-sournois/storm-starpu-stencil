@@ -11,10 +11,10 @@ set output 'cache_oblivious_gpu1_limit300.pdf'
 set title "Limited memory 300 MB"
 
 plot \
-     "./output/cache_oblivious_regular_300.txt" \
+     "./output/cache_oblivious_1_300.txt" \
      using ($1):($2)/($1) \
      with linespoints title "cache-oblivious 1 GPU" ls 1 lw 2 pt 1, \
-     "./output/cache_oblivious_1_dmdar_300_1.0.txt" \
+     "./output/cache_oblivious_1_dmdar_300_1.txt" \
      using ($1):($2)/($1) \
      with linespoints title "dmdar 1 GPU" ls 2 lw 2 pt 2, \
 
@@ -23,10 +23,10 @@ set output 'cache_oblivious_gpu1_limit0.pdf'
 set title "Limited memory 0 MB"
 
 plot \
-     "./output/cache_oblivious_regular_0.txt" \
+     "./output/cache_oblivious_1_0.txt" \
      using ($1):($2)/($1) \
      with linespoints title "cache-oblivious 1 GPU" ls 1 lw 2 pt 1, \
-     "./output/cache_oblivious_1_dmdar_0_1.0.txt" \
+     "./output/cache_oblivious_1_dmdar_0_1.txt" \
      using ($1):($2)/($1) \
      with linespoints title "dmdar 1 GPU" ls 2 lw 2 pt 2, \
 
@@ -34,12 +34,12 @@ set output 'cache_oblivious_gpu2_limit300.pdf'
 set title "Limited memory 300 MB"
 
 plot \
-     "./output/cache_oblivious_parallel-submit_300.txt" \
+     "./output/cache_oblivious_2_300.txt" \
      using ($1):($2)/($1)\
      with linespoints title "cache-oblivious 2 GPU" ls 1 lw 2 pt 1, \
-     "./output/cache_oblivious_2_dmdar_300_1.0.txt" \
+     "./output/cache_oblivious_2_dmdar_300_1.txt" \
      using ($1):($2)/($1) \
-     with linespoints title "dmdar 2 GPU beta=1.0" ls 2 lw 2 pt 2, \
+     with linespoints title "dmdar 2 GPU beta=1" ls 2 lw 2 pt 2, \
      "./output/cache_oblivious_2_dmdar_300_1.2.txt" \
      using ($1):($2)/($1) \
      with linespoints title "dmdar 2 GPU beta=1.2" ls 3 lw 2 pt -1, \
@@ -64,12 +64,12 @@ set output 'cache_oblivious_gpu2_limit0.pdf'
 set title "Limited memory 0 MB"
 
 plot \
-     "./output/cache_oblivious_parallel-submit_0.txt" \
+     "./output/cache_oblivious_2_0.txt" \
      using ($1):($2)/($1)\
      with linespoints title "cache-oblivious 2 GPU" ls 1 lw 2 pt 1, \
-     "./output/cache_oblivious_2_dmdar_0_1.0.txt" \
+     "./output/cache_oblivious_2_dmdar_0_1.txt" \
      using ($1):($2)/($1) \
-     with linespoints title "dmdar 2 GPU beta=1.0" ls 2 lw 2 pt 2, \
+     with linespoints title "dmdar 2 GPU beta=1" ls 2 lw 2 pt 2, \
      "./output/cache_oblivious_2_dmdar_0_1.2.txt" \
      using ($1):($2)/($1) \
      with linespoints title "dmdar 2 GPU beta=1.2" ls 3 lw 2 pt -1, \

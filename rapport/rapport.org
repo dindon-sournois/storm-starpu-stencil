@@ -1,5 +1,4 @@
 #+INCLUDE: "header.org"
-# parler du découpage en blocs *???*
 
 * L'équipe Inria /STORM/
 
