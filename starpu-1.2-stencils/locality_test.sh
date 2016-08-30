@@ -14,70 +14,6 @@ limit_mem_fxt_list="0 100"
 domain_fxt_list="400"
 nbgpus_fxt_list="1 2"
 
-limit_mem_list="0 500"
-nbgpus_list="1 2"
-iter="100"
-limit_mem_fxt_list="0 500"
-domain_fxt_list="100"
-nbgpus_fxt_list="1 2"
-
-# function test_limit_mem() {
-#     $compile > /dev/null
-#     cd "build-simgrid-no-fxt" || exit
-#     # NOTE: real maxmem = 8294 MB (2833 * 3)
-#     # maxmem=2850
-#     domain=500
-#     vector=3
-#     problem_size=`expr $domain \* $vector`
-#     sched=dmdar
-#     filename=../output/limit_gpu_mem_"$sched"_"$domain"x"$vector".txt
-#     echo $filename
-#     export STARPU_SCHED=$sched
-#     echo "# MEM_PER_NODE (MB) COMPLETION_TIME (ms)" > $filename
-
-#     for (( m=1500 ; m>0 ; m-=50 ))
-#     do
-#         echo $m
-#         completed_time=`STARPU_LIMIT_OPENCL_MEM=$m STARPU_LIMIT_CUDA_MEM=$m \
-#         ./tests/datawizard/locality \
-#         --domain-size $domain \
-#         --vector-size $vector \
-#         --alternate-submit \
-#         --silent \
-#         | grep "completion time" | cut -d \  -f4`
-#         echo "$m $completed_time" >> $filename
-#     done
-#     cd - > /dev/null
-#     unset STARPU_SCHED
-# }
-
-# function test_increase_problem_size() {
-#     $compile > /dev/null
-#     cd "build-simgrid-no-fxt" || exit
-#     # NOTE: real maxmem = 8294 MB (2833 * 3)
-#     limit_mem=600
-#     vector=3
-#     sched=dmdar
-#     filename=../output/increase_problem_size_"$sched"_"alternate"_"$limit_mem".txt
-#     export STARPU_SCHED=$sched
-#     echo "# PROBLEM_SIZE (MB) COMPLETION_TIME (ms)" > $filename
-
-#     for (( d=200 ; d<=3333; d+=274 ))
-#     do
-#         problem_size=`expr $d \* $vector`
-#         completed_time=`STARPU_LIMIT_OPENCL_MEM=$limit_mem STARPU_LIMIT_CUDA_MEM=$limit_mem \
-#         ./tests/datawizard/locality \
-#         --domain-size $d \
-#         --vector-size $vector \
-#         --alternate-submit \
-#         --silent \
-#         | grep "completion time" | cut -d \  -f4`
-#         echo "$problem_size $completed_time" >> $filename
-#     done
-#     cd - > /dev/null
-#     unset STARPU_SCHED
-# }
-
 function test_cache_oblivious() {
     $compile > /dev/null
     cd "build-simgrid-no-fxt" || exit
@@ -101,8 +37,7 @@ function test_cache_oblivious() {
             echo "# PROBLEM_SIZE (MB) COMPLETION_TIME (ms)" > $filename
         done
 
-        # for (( d=20 ; d<=1000; d+=48 )); do
-        for (( d=20 ; d<=1000; d+=500 )); do
+        for (( d=116 ; d<=1000; d+=48 )); do
             problem=$(expr "$d" \* "$vector")
             for nbgpus in $nbgpus_list; do
                 for sched in dmdar modular-heft dmda lws; do
@@ -139,9 +74,9 @@ function test_cache_oblivious_details() {
     cd "build-simgrid/output" || exit
 
     for domain in $domain_fxt_list; do
-        problem=$(expr "$d" \* "$vector")
+        problem=$(expr "$domain" \* "$vector")
         for limit_mem in $limit_mem_fxt_list; do
-            foldername=d"$problem"_l"$limit_mem"_i"$iter"/
+            foldername=p"$problem"_l"$limit_mem"_i"$iter"/
             mkdir $foldername 2> /dev/null
             cd $foldername && echo $foldername >> "$results"
             echo $foldername
@@ -178,9 +113,9 @@ function test_prefetch() {
     cd "build-simgrid/output" || exit
 
     for domain in $domain_fxt_list; do
-        problem=$(expr "$d" \* "$vector")
+        problem=$(expr "$domain" \* "$vector")
         for limit_mem in $limit_mem_fxt_list; do
-            foldername=d"$problem"_l"$limit_mem"_i"$iter"/
+            foldername=p"$problem"_l"$limit_mem"_i"$iter"/
             mkdir $foldername 2> /dev/null
             cd $foldername && echo $foldername >> "$results"
             for opt in regular prefetch-data; do
@@ -205,13 +140,13 @@ function test_prio() {
     cd "build-simgrid/output" || exit
 
     for domain in $domain_fxt_list; do
-        problem=$(expr "$d" \* "$vector")
+        problem=$(expr "$domain" \* "$vector")
         for limit_mem in $limit_mem_fxt_list; do
-            foldername=d"$problem"_l"$limit_mem"_i"$iter"/
+            foldername=p"$problem"_l"$limit_mem"_i"$iter"/
             mkdir $foldername 2> /dev/null
             cd $foldername && echo $foldername >> "$results"
             for nbcpus in 1 2 4; do
-                for sched in prio eager; do
+                for sched in prio; do
                     echo ; echo "starting $sched cpu $nbcpus problem $problem iter $iter limit $limit_mem"
                     targetname="$sched"_cpu"$nbcpus"/
                     mkdir $targetname 2> /dev/null
