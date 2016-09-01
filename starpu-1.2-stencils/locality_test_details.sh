@@ -8,8 +8,8 @@ ratio=0.8
 vector=3
 
 iter="100"
-limit_mem_fxt_list="0 150"
-domain_fxt_list="400"
+limit_mem_fxt_list="0 200"
+domain_fxt_list="200"
 nbgpus_fxt_list="1 2"
 
 function test_cache_oblivious_details() {

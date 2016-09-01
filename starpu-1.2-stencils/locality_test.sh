@@ -1,13 +1,10 @@
 #!/bin/bash
 
-results=~/rev/internship/storm/starpu-1.2-stencils/where_to_check.txt
-echo CREATED DIRS : > "$results"
-
 host="attila"
 ratio=0.8
 vector=3
 
-limit_mem_list="0 150"
+limit_mem_list="0 200"
 nbgpus_list="1 2"
 iter="100"
 
@@ -34,7 +31,7 @@ function test_cache_oblivious() {
             echo "# PROBLEM_SIZE (MB) COMPLETION_TIME (ms)" > $filename
         done
 
-        for (( d=68 ; d<=1000; d+=48 )); do
+        for (( d=68 ; d<=1000; d+=96 )); do
             problem=$(expr "$d" \* "$vector")
             for nbgpus in $nbgpus_list; do
                 for sched in dmdar modular-heft dmda lws; do
@@ -65,7 +62,46 @@ function test_cache_oblivious() {
     cd .. > /dev/null
     unset STARPU_SCHED
 }
-test_cache_oblivious && ./locality_cache_oblivious.gp
+
+function test_load() {
+    $compile > /dev/null
+    cd "build-simgrid-no-fxt" || exit
+
+    for limit_mem in 0; do
+        for nbgpus in 2; do
+            for load in dyn-unbalanced-load unbalanced-load regular; do
+                for sched in dmdar; do
+                    filename=../output/load_"$nbgpus"_"$sched"_"$limit_mem"_"$load".txt
+                    echo "# PROBLEM_SIZE (MB) COMPLETION_TIME (ms)" > $filename
+                    for (( d=66 ; d<=966; d+=50 )); do
+                        problem=$(expr "$d" \* "$vector")
+                        export STARPU_SCHED=$sched
+                        echo ; echo "starting $sched $problem $load"
+                        completed_time=$(STARPU_HOSTNAME=$host STARPU_NCPUS=0 STARPU_NCUDA=$nbgpus STARPU_NOPENCL=0 STARPU_LIMIT_CUDA_MEM=$limit_mem ./tests/datawizard/locality --domain-size $d --vector-size $vector --iterations $iter --$load --silent | grep "completion time" | cut -d \  -f4)
+                        echo "$completed_time"
+                        echo "$problem $completed_time" >> $filename
+                    done
+                done
+
+                filename=../output/load_"$nbgpus"_co_"$limit_mem"_"$load".txt
+                echo "# PROBLEM_SIZE (MB) COMPLETION_TIME (ms)" > $filename
+                for (( d=66 ; d<=966; d+=50 )); do
+                    problem=$(expr "$d" \* "$vector")
+                    echo ; echo "starting cache oblivious $nbgpus $problem $load"
+                    completed_time=$(STARPU_HOSTNAME=$host STARPU_LIMIT_CUDA_MEM=$limit_mem ./tests/datawizard/locality --domain-size $d --vector-size $vector --$load --silent --iterations $iter --cache-oblivious --co-nbgpus $nbgpus | grep "completion time" | cut -d \  -f4)
+                    echo "$completed_time"
+                    echo "$problem $completed_time" >> $filename
+                done
+            done
+        done
+    done
+
+    cd .. > /dev/null
+    unset STARPU_SCHED
+}
+
+# test_cache_oblivious && ./locality_cache_oblivious.gp
+test_load
 
 unset STARPU_HOSTNAME
 exit 0

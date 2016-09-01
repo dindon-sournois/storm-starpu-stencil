@@ -50,8 +50,10 @@
 #+BEGIN_LATEX
 \begin{titlepage}
   \centering
-  \includegraphics[width=5cm]{img/logo-u-bordeaux.jpg}
-    \includegraphics[width=5cm]{img/logo-inria.png}\par\vspace{1cm}
+  \includegraphics[width=0.3\linewidth]{img/logo-inria.png}
+  \includegraphics[width=0.2\linewidth]{img/logo-labri.jpg}
+  \includegraphics[width=0.3\linewidth]{img/logo-u-bordeaux.jpg}
+  \par\vspace{1cm}
   {\scshape\LARGE \University\par}
   \vspace{0.5cm}
   {\Large \Class\par}

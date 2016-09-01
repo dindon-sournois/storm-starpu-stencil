@@ -1,92 +1,214 @@
 #+INCLUDE: "header.org"
 
-* L'équipe Inria /STORM/
+* L'équipe /STORM/ Inria Sud-ouest
+\newpage
 
 * Introduction
 ** Le domaine du calcul haute performance
-    - prog parallele plusieurs cpu, plusieurs gpu, plusieurs machines
-    - paradigme de programmation parallèle en tâches
-    - architecture hétérogène (plusieurs GPUs, plusieurs bancs NUMA...)
-** Poser le problème ici
-donner une idee de la solution / la voie choisie
-interessant etudier si le runtime s'en sort tout seul
+   Dans le domaine du calcul haute performance, il est d'usage d'utiliser
+   plusieurs unités de calculs en parallèle afin de traiter des problèmes de
+   plus en plus rapidement. Ces unités de calculs peuvent être des CPUs
+   (processeur) ou des GPUs (carte graphique).
+
+   Pour traiter des données de plus en plus conséquente, nous pouvons utiliser
+   des machines reliées en réseau et communicant avec un protocole adapté (e.g.
+   /Message Passing Interface/ ou MPI).
+
+   Il est courant de mélanger toutes ces technologies lors d'une même exécution.
+   Certains serveur de calcul disposent alors de plusieurs machines
+   communicantes. Chaque machine ayant une architecture dit hétérogène, pouvant
+   contenir à la fois des CPUs et des GPUs. Dans ce stage, nous ne nous
+   intéresserons pas à la programmation distribuée sur plusieurs machines.
+
+   Afin d'utiliser au mieux ce matériel, il convient d'utiliser des paradigmes
+   de programmation adapté. Une méthode qui a déjà était le sujet de nombreuses
+   recherches est la programmation en tâches. Une tâche représente un
+   sous-ensemble du problème à résoudre. Programmer avec des tâches consiste
+   donc à construire plusieurs sous-ensemble du problème et définir comment chaque
+   sous-ensemble est lié aux autres sous-ensembles à l'aide de dépendances de
+   tâches. Nous obtenons alors un arbre de dépendances de tâches. Enfin nous
+   les donnons à résoudre à des unités de calcul différentes dans un ordre qui
+   dépend de l'arbre de tâches construit. Un exemple d'arbre de dépendances de
+   tâches est illustré figure [[fig:task-deps]].
+
+#+NAME: fig:task-deps
+#+CAPTION: Arbre de dépendances de tâches.
+#+ATTR_LATEX: :width 0.4\linewidth
+[[file:img/task-deps.pdf]]
+** Ordonnancer un ensemble de tâches
+   L'objectif étant de minimiser le temps de calcul global de toutes les tâches,
+   une question récurrente lorsqu'on programme des tâches est de savoir à qui
+   demande-t-on de calculer une tâches parmi toutes les unités de calcul
+   disponibles. Lorsque l'on souhaite n'utiliser que des CPUs, une solution
+   consiste à laisser l'ordonnancement des tâches au système d'exploitation.
+   Cette solution perd de son sens lorsque qu'on y ajoute un ou plusieurs GPUs.
+   De plus, le système d'exploitation n'a pas conscience des autres machines
+   reliées au réseau.
+
+   Une autre solution consiste à laisser l'utilisateur assigner, une à une, les
+   tâches à une unité de calcul. Enfin, et c'est le sujet de ce stage, nous
+   pouvons laisser l'ordonnancement à des supports d'exécution ou /runtime/ qui
+   vont décider pour chaque tâche sur quelle unité ou quelle machine il convient
+   de la calculer.
+
+   L'objectif du stage consiste à étudier l'ordonnancement d'application de type
+   stencils (simulation de gaz, de propagation de chaleur, ...) dans un support
+   d'exécution. Nous étudierons en particulier l'ordonnancement de tâches dans
+   le support d'exécution /StarPU/, développé dans l'équipe /STORM/ Inria
+   Sud-ouest. Les application de type stencils ayant des particularités que nous
+   discuterons section [[#sec:com-stencils]], il est intéressant d'évaluer les
+   outils déjà disponibles dans le support d'exécution /StarPU/ permettant de
+   traiter de telles applications ou dans le cas contraire, d'identifier quels
+   seraient les ajouts nécessaires.
 
 * Contexte
-** applications stencils
-*** qu'est-ce qu'une application stencil
-    - classe d'algorithmes beaucoup utilisé en simulation
-    - pour discrétiser des phénomènes physiques locaux sur des grilles
-      régulières
-    - on applique une petite fonction (noyau) sur l'ensemble du domaine, de
-      manière itérative (figure [[fig:3D_stencil]])
-    - noyau : chaque cellule est mise à jour en fonction du voisinage
+** Architecture hétérogène
+   Il est courant de disposer d'une architecture hétérogène sur nos machines
+   pouvant comprendre des dizaines de CPUs et un, deux voir trois cartes
+   graphiques. Les GPUs sont généralement bien plus rapide que des CPUs pour
+   certaines tâches. Comme illustré figure [[fig:memarch]] chaque carte graphique
+   dispose de sa propre mémoire.
+
+   Celle-ci est cependant plus limitée en volume que la mémoire principale, soit
+   1 à 4 Go pour une carte graphique contre plusieurs dizaines de Go pour la
+   mémoire principale. De plus, les unités de calcul d'une carte graphique ne
+   peuvent pas directement avoir accès à la mémoire principale. Lorsque l'on
+   souhaite accéder à une donnée, il faut la charger depuis la mémoire
+   principale vers la mémoire de la carte graphique. La latence étant plus
+   élevée qu'un accès par un CPU.
+
+   Il est donc sage de réduire le volume de données transférées au minimum. Pour
+   limiter l'impact de la durée des transferts mémoires, une méthode consiste à
+   prévoir, à l'avance, quand une unité de calcul aura besoin d'une donnée en
+   mémoire, et de commencer à transférer cette donnée dès que possible. On parle
+   alors de recouvrement des transferts mémoires.
+
+#+NAME: fig:memarch
+#+CAPTION: Topologie mémoire d'une machine avec deux cartes graphiques.
+#+ATTR_LATEX: :width 0.5\linewidth
+[[file:img/memarch.png]]
+
+** Support d'exécution
+
+    Un support d'exécution est un composant qui vient se placer entre le système
+    d'exploitation et l'utilisateur comme illustré figure [[fig:runtime]]. Son rôle
+    est d'ordonnancer finement les processus parmi les différentes unités de
+    calcul. Pour ce faire, il doit demander au système d'exploitation de laisser
+    le support d'exécution se charger de l'ordonnancement des processus. Il peut
+    aussi le rôle d'interface avec le protocole de communication MPI et les
+    accélérateurs GPU.
+
+#+NAME: fig:runtime
+#+CAPTION: Hiérarchie logicielle et support d'exécution.
+#+ATTR_LATEX: :width 0.4\linewidth
+[[file:img/runtime.pdf]]
+
+    Il peut ainsi décider de la répartition des tâches de calcul sur les unités
+    de calcul à disposition. Pour prendre ces décision, il utilise des
+    politiques d'ordonnancement ou ordonnanceurs. Nous détaillons quelques
+    exemples section [[#sec:detail-sched]].
+** Applications stencils
+*** Qu'est-ce qu'une application stencil ?
+    Il s'agit d'une classe d'algorithmes beaucoup utilisé en simulation (telle
+    que simulation de gaz ou de propagation de chaleur). Un tel algorithme
+    permet généralement de discrétiser des phénomènes physiques locaux sur des
+    grilles régulières.
+
+    La dimension temporelle est exprimée par des itérations. Une itération
+    consiste à appliquer une petite fonction sur chaque cellule d'une grille.
+    Cette fonction ayant la particularité de mettre à jour le contenu d'une
+    cellule en fonction de son voisinage (illustrée figure [[fig:3D_stencil]]).
+
 # grille avec arrow pour representer les dept
 #+NAME: fig:3D_stencil
-#+CAPTION: Stencil 6-points 3D - La mise à jour d'un élément se fait à partir
+#+CAPTION: Stencil 6-points 3D - La mise à jour d'un élément se fait ici à partir
 #+CAPTION: des 6 éléments voisins cite:6points-stencil.
-#+ATTR_LATEX: :width 0.4\linewidth
+#+ATTR_LATEX: :width 0.2\linewidth
 [[file:img/3D_stencil.png]]
-*** on utilise un stencil jouet
-** on fait des taches dans une runtime
 
-*** paradigme de programmation en taches
-*** /Runtime/ : donner une définition
-       + composant entre le système d'exploitation et l'utilisateur (libraire
-         d'algèbre linéaire parallèle)
-       + ordonnanceur pour des applications d'algèbre linéaire classique
+    Pour notre étude, nous utiliserons comme stencil un prototype jouet simple
+    afin de faciliter l'analyse des expériences.
 
-** hétérogénéité
-schematiser l'espace memoires des GPUS :
-- pas acces a la main memory
-- chaque GPU a sa memoire
-- il faut donc charger les donnees en GPU
-- pas beaucoup d'espace
-- probleme de bande passante
-** Schéma de calcul particulier des stencils
- - decoupage par blocs / taches, schema dep taches precedentes
- - Beaucoup de communications avec le voisinage
- - un ratio accès mémoire par calcul élevé
- - il devient difficile voir impossible de recouvrir totalement les temps de
-      transferts entre les noeuds mémoires avec du calcul
-   # si l'on fait un transfert pour chaque itération, sans réutilisation
- - montrer un bout de trace vite où est mis en évidence le temps passé idle pour du
-      stencil *???*
+*** Schéma de calcul particulier des stencils
+    :PROPERTIES:
+    :CUSTOM_ID: sec:com-stencils
+    :END:
+    Les nombreux accès aux cellules voisines lors d'une mise à jour peuvent
+    avoir comme principale conséquence un ratio accès mémoire par mise à jour de
+    cellule très élevé. Le facteur temporel limitant n'est alors plus le temps
+    de calcul mais le temps d'accès mémoire des cellules voisines. De plus, il
+    devient alors difficile de recouvrir totalement les temps de transferts
+    entre les différents noeuds mémoires par du calcul. Il faut alors faire de
+    la réutilisation des données.
 
-** Comment économiser de la bande passante
-    - on s'intéresse surtout aux cas où on a pas assez de mémoire
-    - Travail sur la localité des données
-      + localité en espace
-      + localité en temps
+ # - decoupage par blocs / taches, schema dep taches precedentes
+
+*** Économiser de la bande passante
+    Nous nous intéresserons surtout aux problèmes de taille supérieur à la
+    mémoire disponible. Ainsi, il ne sera pas possible de stocker l'intégralité
+    des données du problème étudié en mémoire GPU, il faudra donc faire des
+    transferts réguliers, ce qui a un coût.
+
+    Pour limiter le volume de données transférées, il est nécessaire de
+    réutiliser les données déjà présentes en mémoire plutôt que d'en transférer
+    de nouvelles. Pour cela, nous pouvons travailler sur la localité des données
+    en se basant sur les deux affirmations suivantes :
+
+    - localité en espace : si un emplacement mémoire est référencé, il est très
+      probable que les emplacements mémoires voisins seront aussi référencés
+      dans un futur proche;
+    - localité en temps : un emplacement mémoire récemment référencé a beaucoup
+      de chance d'être référencé à nouveau dans un futur proche.
+
+    Ces affirmations sont d'autant plus vraies pour les stencils du à la nature
+    de la mise à jour d'une cellule.
 ** État de l'art
-
 *** Les contraintes des applications stencils
-    - On rappelle le contexte et le problème :
-      + Dans le cadre des Runtimes et de la programmation parallèle en tâches
-      + interessant etudier si le runtime s'en sort tout seul
-      + Trouver des solutions d'ordonnancement de tâches stencils
+    Dans le domaine du calcul haute performance, le paradigme de programmation
+    parallèle en tâches est très utilisé. Cependant, pour des machines ayant une
+    architecture hétérogène, il peut devenir très complexe de trouver la
+    meilleur répartition des tâches sur les différentes unités de calcul. Pour
+    pallier à ce problème, les supports d'exécution sont une solution. Ils
+    essayent alors de prendre les décisions d'ordonnancement appropriées.
+
+    La localité des données étant un facteur temporel réducteur important pour
+    les applications stencils, il est intéressant d'étudier quelles
+    peuvent être les décisions prises par le support d'exécution /StarPU/ et
+    quelles améliorations nous pouvons envisager.
+
 *** Solutions existantes au problème
-    - Travaux précédents qui ont portés sur l'ordonnancement pour de l'algèbre
-      linéaire
-    - assez peu de travaux sur les stencils *???*
-      # Peu de travaux sur les stencils dans l'équipe, oui, seulement récemment
-      # avec le projet Aghora, où on a utilisé des priorités pour faire de la
-      # localité de manière crado. Mais c'est par contre très utilisé par
-      # ailleurs, juste pas avec des runtimes, en général les gens font toute la
-      # répartition à la main
-    - Parcours cache oblivious à la charge de l'application
-      # oublieux: mais garder aussi le terme anglais et une explication du
-      # sens de l'expression
-    - (On simule de la localité en donnant des tâches avec des priorités
-      croissantes avec le temps, indexées sur le numéro d'iteration)
-    - chercher stencil GPU out of core, mais souvent fait à la main pas de
-    manière générique
-    - il manque donc quelque chose : à expliquer / détailler ici
-      + on sait pas vraiment observer
-      + on veut savoir si on peut faire ça de manière générique, si les outils
-        le permettent deja, on veut aussi evaluer
+    Le domaine des stencils reste un problème très étudié en calcul haute
+    performance. Cependant, la répartition des calculs est en général fait à la
+    main. Des travaux ont aussi portés sur des algorithmes caches oblivieux ou
+    /oblivious/ adaptés aux stencils. Ceux-ci tentent de minimiser le nombre de
+    défauts de cache (TODO: définir cette notion) sans connaître la taille du
+    cache. Pour cela, on maximise la réutilisation des données
+    cite:frigo-co-stencil. Cela nécessite aussi une charge de travail
+    supplémentaire pour l'utilisateur.
+
+    *???* Parler du projet agora avec les priorités ? C'est peut-être trop technique
+    # Peu de travaux sur les stencils dans l'équipe, oui, seulement récemment
+    # avec le projet Aghora, où on a utilisé des priorités pour faire de la
+    # localité de manière crado.
+    # - (On simule de la localité en donnant des tâches avec des priorités
+    #   croissantes avec le temps, indexées sur le numéro d'iteration)
+    # - chercher stencil GPU out of core, mais souvent fait à la main pas de
+    # manière générique
+
+    De précédents travaux dans l'équipe /STORM/ portant sur des applications
+    d'algèbre linéaire dense, creuse et compressée ont montré que le support
+    d'exécution /StarPU/ pouvait apporter des performances similaires qu'un code
+    taillé sur mesure. En revanche, peu de travaux ont été réalisés dans
+    l'équipe concernant les stencils. Nous voulons savoir si les
+    supports d'exécution peuvent traiter ce problème de manière générique.
+
+    Pour s'assurer que le support d'exécution prend des décisions
+    d'ordonnancement favorisant la localité, nous avons besoins d'outils de
+    visualisation adaptés au problème. Ces outils doivent nous permettre
+    d'évaluer les ordonnanceurs et donc éventuellement de proposer des
+    améliorations.
 
 * Contribution du stage
-  
 ** Résumé de la contribution
 
  - Comportement des ordonnanceurs de StarPU, 3 métriques à considérer
@@ -100,6 +222,10 @@ schematiser l'espace memoires des GPUS :
 
 ** Méthode de référence
 *** Ordonnacement : recouvrir les transferts mémoire et localité dans l'espace
+:PROPERTIES:
+:CUSTOM_ID: sec:detail-sched
+:END:
+
    - deque model data aware ready (dmdar)
    - figure diagramme de gantt avec plusieurs noeuds et mises en avant des transferts
    - on explique dmdar (/data aware/ et /ready tasks/)
@@ -120,13 +246,13 @@ schematiser l'espace memoires des GPUS :
    - /data/ et /ready aware/ on fait du recouvrement
    - pas beaucoup de quoi recouvrir pour les stencils, à confirmer section évaluation
 *** Algorithme cache oblivious de soumission de tâches
-   - cache oblivious sequentiel cite:frigo-cache-oblivious
+   - cache oblivious sequentiel cite:frigo-co-stencil
    - on bricole une version parallèle
    - on limite au mimimum les /cache misses/ ou plutôt les transferts mémoire
    - méthode idéale même lorsque la mémoire est limité
    - charge statique
 *** répartition de charge : peut-être mettre ça dans l'introduction (ETA)
-     + répartition de charge inégale : il faut partitionner à la main le domaine
+
      + répartition de charge dynamique (en fonction du temps) : avoir recours à des partitionneurs, c'est pas du tout trivial (mettre références)
      + ref AMR
 
@@ -192,14 +318,23 @@ permettent de visualiser ici *???* ou bien parti évaluation lors d'une étude d
     # d'aussi bien que cache oblivious", et puis ensuite "ah ben en fait c'est
     # beaucoup mieux"
 *** répartition de charge inégale : cache oblivious à la traine
+
       * et si on prédécoupe à la main, est-ce intéressant à montrer *???*
       # c'est intéressant de montrer qu'en prédécoupant à la main on retrouve un
       # équilibre de charge, oui, mais là on enfonce le clou en utilisant une
       # répartition de charge dynamique
+#+NAME: fig:load_gpu2_limit0
+#+CAPTION: Influence de répartitions de charge inégales sur l'ordonnanceur =dmdar=
+#+CAPTION: et via une soumission des tâches cache oblivieux - deux GPU, pas de
+#+CAPTION: limite mémoire
+#+ATTR_LATEX: :width 0.8\linewidth
+[[file:exp/load_gpu2_limit0.pdf]]
+
 *** cache oblivious mirroir ou pas mirroir
 *** que faut-il en retenir
 
 * Conclusion
+# 1-2 pages
 ** Court résumé des points importants
 
 - Problème initial
