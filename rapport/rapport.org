@@ -275,20 +275,27 @@ permettent de visualiser ici *???* ou bien parti évaluation lors d'une étude d
 *** Diagramme d'exécution du domaine en fonction des itérations
     - symbolique des isochrones
 
-** Un autre élément d'implémentation ?
-
-** Évaluation (et validation) plus tard la validation
+** Évaluation
 
 # Expérimentation : montrer et donc expliquer certaines courbes ou images intéressantes
 # Permet d'appuyer la pertinence des travaux présentés
 
-*** Expérimentation simulées à l'aide de /Simgrid/
-    + tout est simulé (architecture de la machine, temps de calcul et transferts)
-    + on gagne du temps, reproductible/déterministe
-    + on laisse la charge aux autres de faire de vrais tests sur de vrais stencils
-# de toutes façons on utilise déjà un stencils factice, ce n'est pas vraiment
-# utile. Ça sera validé sur vraie machine avec une vraie application plus tard
-*** Détailler le programme de test locality.c
+*** Expérimentation simulées à l'aide de /SimGrid/
+    /SimGrid/ est un composant logiciel qui permet de simuler des expériences
+    dans le domaine du calcul haute performance ou dans le /cloud computing/ ou
+    informatique en nuage. Tout les composants d'une expérience peuvent être
+    simulés : architecture de la machine ou du réseau de machines, temps de
+    calculs, temps de transferts mémoires...
+
+    Cela permet de tester rapidement des expériences même extrême (taille du
+    problème très grand par exemple). De plus, la simulation apporte un aspect
+    reproductible et déterministe, ce qui n'est pas forcément le cas pour
+    certaines heuristiques.
+
+    La validation de ces expériences pourrait être faite dans le futur sur de
+    vraies machines, en utilisant un stencil moins factice que celui utilisé
+    durant le stage.
+*** Le programme de test utilisé : un stencil 1D
     + stencil jouet faux stencil fait pas de calcul, attend un temps predettermine
     + on simule des blocs en disant ce truc la fait 3mo
     + on arrange la taille des blocs pour que duree transfert = 2 x temps de calcul
