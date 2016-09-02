@@ -1,24 +1,17 @@
 #+INCLUDE: "header.org"
 
 * L'équipe /STORM/ Inria Sud-ouest
+:PROPERTIES:
+:UNNUMBERED: t
+:END:
 \newpage
-
 * Introduction
 ** Le domaine du calcul haute performance
+
    Dans le domaine du calcul haute performance, il est d'usage d'utiliser
    plusieurs unités de calculs en parallèle afin de traiter des problèmes de
    plus en plus rapidement. Ces unités de calculs peuvent être des CPUs
    (processeur) ou des GPUs (carte graphique).
-
-   Pour traiter des données de plus en plus conséquente, nous pouvons utiliser
-   des machines reliées en réseau et communicant avec un protocole adapté (e.g.
-   /Message Passing Interface/ ou MPI).
-
-   Il est courant de mélanger toutes ces technologies lors d'une même exécution.
-   Certains serveur de calcul disposent alors de plusieurs machines
-   communicantes. Chaque machine ayant une architecture dit hétérogène, pouvant
-   contenir à la fois des CPUs et des GPUs. Dans ce stage, nous ne nous
-   intéresserons pas à la programmation distribuée sur plusieurs machines.
 
    Afin d'utiliser au mieux ce matériel, il convient d'utiliser des paradigmes
    de programmation adapté. Une méthode qui a déjà était le sujet de nombreuses
@@ -28,14 +21,62 @@
    sous-ensemble est lié aux autres sous-ensembles à l'aide de dépendances de
    tâches. Nous obtenons alors un arbre de dépendances de tâches. Enfin nous
    les donnons à résoudre à des unités de calcul différentes dans un ordre qui
-   dépend de l'arbre de tâches construit. Un exemple d'arbre de dépendances de
+   dépend de l'arbre de tâches construit. Un exemple de graphe de dépendances de
    tâches est illustré figure [[fig:task-deps]].
 
 #+NAME: fig:task-deps
-#+CAPTION: Arbre de dépendances de tâches.
+#+CAPTION: Graphe de dépendances de tâches.
 #+ATTR_LATEX: :width 0.4\linewidth
 [[file:img/task-deps.pdf]]
+
+** Qu'est-ce qu'une application stencil ?
+    Il s'agit d'une classe d'algorithmes beaucoup utilisé en simulation (telle
+    que simulation de gaz ou de propagation de chaleur). Un tel algorithme
+    permet généralement de discrétiser des phénomènes physiques locaux sur des
+    grilles régulières.
+
+    La dimension temporelle est exprimée par des itérations. Une itération
+    consiste à appliquer une petite fonction sur chaque cellule d'une grille.
+    Cette fonction ayant la particularité de mettre à jour le contenu d'une
+    cellule en fonction de son voisinage (illustrée figure [[fig:3D_stencil]]).
+
+    Pour résoudre un problème stencil à l'aide de tâches, nous pouvons regrouper
+    plusieurs mises à jour de cellules voisines en une tâche. Il faut alors
+    regrouper suffisamment de mises à jour pour que cette tâche représente un
+    calcul conséquent.
+
+# grille avec arrow pour representer les dept
+#+NAME: fig:3D_stencil
+#+CAPTION: Stencil 6-points 3D - La mise à jour d'un élément se fait ici à partir
+#+CAPTION: des 6 éléments voisins cite:6points-stencil.
+#+ATTR_LATEX: :width 0.2\linewidth
+[[file:img/3D_stencil.png]]
+** Sujet d'étude et plan
+   Un support d'exécution est une couche logicielle permettant de traiter des
+   problèmes de calcul haute performance de manière générique. Au cours du stage
+   nous avons cherché à savoir si /StarPU/, le support d'exécution développé
+   dans l'équipe, peut aussi traiter des applications stencil efficacement.
+
+   Dans la section [[#sec:contexte]] nous discuterons du contexte du stage. Nous
+   reviendrons en détail sur les particularités des applications stencil, sur la
+   programmation en tâches ainsi que les supports d'exécutions. Nous terminerons
+   sur l'État de l'art dans le domaine.
+
+   Dans la section [[#sec:contrib]] nous détaillerons les travaux principaux
+   réalisés durant le stage :
+   - outil simple pour visualiser les décisions prises par /StarPU/ pour des
+     applications stencil,
+   - évaluation et comparaison des algorithmes déjà présent dans /StarPU/ pour
+     des applications stencil.
+
+   Enfin, dans la section [[#sec:concl]] nous résumerons les points importants du
+   stage et nous discuterons des perspectives qui en résultent.
+* Contexte
+:PROPERTIES:
+:CUSTOM_ID: sec:contexte
+:END:
 ** Ordonnancer un ensemble de tâches
+
    L'objectif étant de minimiser le temps de calcul global de toutes les tâches,
    une question récurrente lorsqu'on programme des tâches est de savoir à qui
    demande-t-on de calculer une tâches parmi toutes les unités de calcul
@@ -60,38 +101,40 @@
    outils déjà disponibles dans le support d'exécution /StarPU/ permettant de
    traiter de telles applications ou dans le cas contraire, d'identifier quels
    seraient les ajouts nécessaires.
-
-* Contexte
 ** Architecture hétérogène
-   Il est courant de disposer d'une architecture hétérogène sur nos machines
-   pouvant comprendre des dizaines de CPUs et un, deux voir trois cartes
-   graphiques. Les GPUs sont généralement bien plus rapide que des CPUs pour
-   certaines tâches. Comme illustré figure [[fig:memarch]] chaque carte graphique
-   dispose de sa propre mémoire.
+   Les machines de calculs sont souvent composées de dizaines de CPUs (/Central
+   Processing Unit/) et un, deux voir trois cartes graphiques. On parle alors
+   d'architecture hétérogène. Les GPUs (/Graphics Processing Unit/) sont les
+   unités de calcul des carte graphique. Ils sont généralement bien plus rapide
+   que des CPUs pour certaines tâches comme le graphisme. Ils sont aussi
+   beaucoup utilisés en calcul haute performance pour faire du calcul généraliste.
 
+   Comme illustré figure [[fig:memarch]] chaque carte graphique dispose de sa propre mémoire.
    Celle-ci est cependant plus limitée en volume que la mémoire principale, soit
-   1 à 4 Go pour une carte graphique contre plusieurs dizaines de Go pour la
+   quelques Go pour une carte graphique contre plusieurs dizaines de Go pour la
    mémoire principale. De plus, les unités de calcul d'une carte graphique ne
    peuvent pas directement avoir accès à la mémoire principale. Lorsque l'on
    souhaite accéder à une donnée, il faut la charger depuis la mémoire
    principale vers la mémoire de la carte graphique. La latence étant plus
    élevée qu'un accès par un CPU.
 
-   Il est donc sage de réduire le volume de données transférées au minimum. Pour
-   limiter l'impact de la durée des transferts mémoires, une méthode consiste à
-   prévoir, à l'avance, quand une unité de calcul aura besoin d'une donnée en
-   mémoire, et de commencer à transférer cette donnée dès que possible. On parle
-   alors de recouvrement des transferts mémoires.
-
 #+NAME: fig:memarch
 #+CAPTION: Topologie mémoire d'une machine avec deux cartes graphiques.
 #+ATTR_LATEX: :width 0.5\linewidth
 [[file:img/memarch.png]]
 
+   Cette latence étant un facteur temporel limitant important, il convient de
+   réguler aux mieux les transferts vers les mémoires des GPUs. Pour cela, nous
+   pouvons essayer de :
+   - limiter le volume de données en réduisant les transferts au strict minimum
+   - limiter le temps passé à attendre qu'une donnée arrive en mémoire en
+   faisant parallèlement des transferts et des calculs. On parle alors de
+   recouvrement des transferts mémoires.
+
 ** Support d'exécution
 
     Un support d'exécution est un composant qui vient se placer entre le système
-    d'exploitation et l'utilisateur comme illustré figure [[fig:runtime]]. Son rôle
+    d'exploitation et l'application comme illustré figure [[fig:runtime]]. Son rôle
     est d'ordonnancer finement les processus parmi les différentes unités de
     calcul. Pour ce faire, il doit demander au système d'exploitation de laisser
     le support d'exécution se charger de l'ordonnancement des processus. Il peut
@@ -103,31 +146,16 @@
 #+ATTR_LATEX: :width 0.4\linewidth
 [[file:img/runtime.pdf]]
 
-    Il peut ainsi décider de la répartition des tâches de calcul sur les unités
-    de calcul à disposition. Pour prendre ces décision, il utilise des
-    politiques d'ordonnancement ou ordonnanceurs. Nous détaillons quelques
-    exemples section [[#sec:detail-sched]].
+    L'utilisateur doit construire un ensemble de tâches pour résoudre un
+    problème, et soumettre toutes ces tâches au support d'exécution. Il peut
+    ainsi décider de la répartition des tâches de calcul sur les unités de
+    calcul à disposition. Pour prendre ces décision, il utilise des politiques
+    d'ordonnancement ou ordonnanceurs. Nous détaillons quelques exemples section
+    [[#sec:detail-sched]].
 ** Applications stencils
-*** Qu'est-ce qu'une application stencil ?
-    Il s'agit d'une classe d'algorithmes beaucoup utilisé en simulation (telle
-    que simulation de gaz ou de propagation de chaleur). Un tel algorithme
-    permet généralement de discrétiser des phénomènes physiques locaux sur des
-    grilles régulières.
 
-    La dimension temporelle est exprimée par des itérations. Une itération
-    consiste à appliquer une petite fonction sur chaque cellule d'une grille.
-    Cette fonction ayant la particularité de mettre à jour le contenu d'une
-    cellule en fonction de son voisinage (illustrée figure [[fig:3D_stencil]]).
-
-# grille avec arrow pour representer les dept
-#+NAME: fig:3D_stencil
-#+CAPTION: Stencil 6-points 3D - La mise à jour d'un élément se fait ici à partir
-#+CAPTION: des 6 éléments voisins cite:6points-stencil.
-#+ATTR_LATEX: :width 0.2\linewidth
-[[file:img/3D_stencil.png]]
-
-    Pour notre étude, nous utiliserons comme stencil un prototype jouet simple
-    afin de faciliter l'analyse des expériences.
+   Pour notre étude, nous utiliserons comme stencil un prototype jouet simple
+   afin de faciliter l'analyse des expériences.
 
 *** Schéma de calcul particulier des stencils
     :PROPERTIES:
@@ -146,22 +174,25 @@
 *** Économiser de la bande passante
     Nous nous intéresserons surtout aux problèmes de taille supérieur à la
     mémoire disponible. Ainsi, il ne sera pas possible de stocker l'intégralité
-    des données du problème étudié en mémoire GPU, il faudra donc faire des
-    transferts réguliers, ce qui a un coût.
+    des données du problème étudié en mémoire GPU, il faudra donc évincer
+    régulièrement des données de la mémoire GPU et faire régulièrement des
+    transferts depuis la mémoire principale, ce qui a un coût.
 
     Pour limiter le volume de données transférées, il est nécessaire de
     réutiliser les données déjà présentes en mémoire plutôt que d'en transférer
-    de nouvelles. Pour cela, nous pouvons travailler sur la localité des données
-    en se basant sur les deux affirmations suivantes :
+    de nouvelles. Pour cela, nous pouvons travailler sur la localité en espace
+    des données en se basant sur l'affirmation suivante : si un emplacement
+    mémoire est référencé, il est très probable que les emplacements mémoires
+    voisins seront aussi référencés dans un futur proche. Cette affirmation se
+    vérifie pour les stencils lors de la mise à jour d'une cellule.
 
-    - localité en espace : si un emplacement mémoire est référencé, il est très
-      probable que les emplacements mémoires voisins seront aussi référencés
-      dans un futur proche;
-    - localité en temps : un emplacement mémoire récemment référencé a beaucoup
-      de chance d'être référencé à nouveau dans un futur proche.
+    De plus, du à la nature algorithmique itérative d'un stencil, chaque
+    emplacement mémoire est accédé à chaque nouvelle itération sur le stencil.
+    Nous aimerions alors travailler sur la localité temporelle des données.
+    Ainsi, plutôt que de mettre à jour tous les éléments les uns à la suite des
+    autres, nous pouvons faire évoluer un petit morceau du domaine. Cela en
+    traitant plusieurs itérations de manières successives, comme illustrée figure *???*.
 
-    Ces affirmations sont d'autant plus vraies pour les stencils du à la nature
-    de la mise à jour d'une cellule.
 ** État de l'art
 *** Les contraintes des applications stencils
     Dans le domaine du calcul haute performance, le paradigme de programmation
@@ -173,8 +204,9 @@
 
     La localité des données étant un facteur temporel réducteur important pour
     les applications stencils, il est intéressant d'étudier quelles
-    peuvent être les décisions prises par le support d'exécution /StarPU/ et
-    quelles améliorations nous pouvons envisager.
+    peuvent être les décisions prises par le support d'exécution /StarPU/,
+    développé par l'équipe /STORM/, et quelles améliorations nous pouvons
+    envisager.
 
 *** Solutions existantes au problème
     Le domaine des stencils reste un problème très étudié en calcul haute
@@ -185,15 +217,6 @@
     cache. Pour cela, on maximise la réutilisation des données
     cite:frigo-co-stencil. Cela nécessite aussi une charge de travail
     supplémentaire pour l'utilisateur.
-
-    *???* Parler du projet agora avec les priorités ? C'est peut-être trop technique
-    # Peu de travaux sur les stencils dans l'équipe, oui, seulement récemment
-    # avec le projet Aghora, où on a utilisé des priorités pour faire de la
-    # localité de manière crado.
-    # - (On simule de la localité en donnant des tâches avec des priorités
-    #   croissantes avec le temps, indexées sur le numéro d'iteration)
-    # - chercher stencil GPU out of core, mais souvent fait à la main pas de
-    # manière générique
 
     De précédents travaux dans l'équipe /STORM/ portant sur des applications
     d'algèbre linéaire dense, creuse et compressée ont montré que le support
@@ -209,6 +232,9 @@
     améliorations.
 
 * Contribution du stage
+:PROPERTIES:
+:CUSTOM_ID: sec:contrib
+:END:
 ** Résumé de la contribution
 
  - Comportement des ordonnanceurs de StarPU, 3 métriques à considérer
@@ -292,8 +318,8 @@ permettent de visualiser ici *???* ou bien parti évaluation lors d'une étude d
     reproductible et déterministe, ce qui n'est pas forcément le cas pour
     certaines heuristiques.
 
-    La validation de ces expériences pourrait être faite dans le futur sur de
-    vraies machines, en utilisant un stencil moins factice que celui utilisé
+    La validation de ces expériences sur de vraies machines, en utilisant un
+    stencil moins factice que celui utilisé durant le stage, ne sera pas faite
     durant le stage.
 *** Le programme de test utilisé : un stencil 1D
     + stencil jouet faux stencil fait pas de calcul, attend un temps predettermine
@@ -341,7 +367,9 @@ permettent de visualiser ici *???* ou bien parti évaluation lors d'une étude d
 *** que faut-il en retenir
 
 * Conclusion
-# 1-2 pages
+:PROPERTIES:
+:CUSTOM_ID: sec:concl
+:END:
 ** Court résumé des points importants
 
 - Problème initial

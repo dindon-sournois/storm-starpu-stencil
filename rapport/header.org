@@ -21,11 +21,11 @@
 # #+LaTeX_HEADER: \usemintedstyle{emacs}
 # #+LaTeX_HEADER: \newminted{common-lisp}{fontsize=\footnotesize}
 
-#+LATEX_HEADER: \newcommand{\Title}{Ordonnancement d'application de type stencil sur cluster hybrides CPU/GPU}
-#+LATEX_HEADER: \newcommand{\DueDate}{lundi 5\ septembre\ 2016}
+#+LATEX_HEADER: \newcommand{\Title}{Ordonnancement d'applications de type stencil sur cluster hybrides CPU/GPU}
+#+LATEX_HEADER: \newcommand{\DueDate}{9\ septembre\ 2016}
 #+LATEX_HEADER: \newcommand{\Length}{juin - août}
-#+LATEX_HEADER: \newcommand{\Class}{Rapport de Stage optionnel Master 1}
-#+LATEX_HEADER: \newcommand{\Institute}{LaBRI, Équipe Inria Bordeaux Sud-Ouest \textsc{Storm}}
+#+LATEX_HEADER: \newcommand{\Class}{Rapport de stage optionnel Master 1}
+#+LATEX_HEADER: \newcommand{\Institute}{Équipe \textsc{Storm}, Inria - LaBRI, centre de recherche Inria Bordeaux - Sud-Ouest }
 #+LATEX_HEADER: \newcommand{\University}{Université de Bordeaux~: Sciences et Technologies}
 #+LATEX_HEADER: \newcommand{\Author}{Loris Lucido}
 #+LATEX_HEADER: \newcommand{\Supervisor}{Olivier Aumage, Samuel Thibault}
