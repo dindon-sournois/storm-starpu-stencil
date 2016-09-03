@@ -59,24 +59,24 @@ plot \
      "./output/perf_2_lws_200.txt" \
      using ($1):($2)/($1)\
      with linespoints title "lws 2 GPU" ls 5 lw 2 pt 5, \
-     # "./output/perf_2_dmdar_200_1.2.txt" \
-     # using ($1):($2)/($1) \
-     # with linespoints title "dmdar 2 GPU beta=1.2" ls 6 lw 2 pt -1, \
-     # "./output/perf_2_dmdar_200_1.4.txt" \
-     # using ($1):($2)/($1) \
-     # with linespoints title "dmdar 2 GPU beta=1.4" ls 7 lw 2 pt -1, \
-     # "./output/perf_2_dmdar_200_0.8.txt" \
-     # using ($1):($2)/($1) \
-     # with linespoints title "dmdar 2 GPU beta=0.8" ls 8 lw 2 pt -1, \
-     # "./output/perf_2_dmdar_200_0.6.txt" \
-     # using ($1):($2)/($1) \
-     # with linespoints title "dmdar 2 GPU beta=0.6" ls 9 lw 2 pt -1, \
-     # "./output/perf_2_dmdar_200_0.1.txt" \
-     # using ($1):($2)/($1) \
-     # with linespoints title "dmdar 2 GPU beta=0.1" ls 10 lw 2 pt -1, \
-     # "./output/perf_2_dmdar_200_10.txt" \
-     # using ($1):($2)/($1) \
-     # with linespoints title "dmdar 2 GPU beta=10" ls 11 lw 2 pt -1, \
+     "./output/perf_2_dmdar_200_1.2.txt" \
+     using ($1):($2)/($1) \
+     with linespoints title "dmdar 2 GPU beta=1.2" ls 6 lw 2 pt -1, \
+     "./output/perf_2_dmdar_200_1.4.txt" \
+     using ($1):($2)/($1) \
+     with linespoints title "dmdar 2 GPU beta=1.4" ls 7 lw 2 pt -1, \
+     "./output/perf_2_dmdar_200_0.8.txt" \
+     using ($1):($2)/($1) \
+     with linespoints title "dmdar 2 GPU beta=0.8" ls 8 lw 2 pt -1, \
+     "./output/perf_2_dmdar_200_0.6.txt" \
+     using ($1):($2)/($1) \
+     with linespoints title "dmdar 2 GPU beta=0.6" ls 9 lw 2 pt -1, \
+     "./output/perf_2_dmdar_200_0.1.txt" \
+     using ($1):($2)/($1) \
+     with linespoints title "dmdar 2 GPU beta=0.1" ls 10 lw 2 pt -1, \
+     "./output/perf_2_dmdar_200_10.txt" \
+     using ($1):($2)/($1) \
+     with linespoints title "dmdar 2 GPU beta=10" ls 11 lw 2 pt -1, \
 
 
 set output 'perf_gpu2_limit0.pdf'
@@ -94,24 +94,24 @@ plot \
      "./output/perf_2_lws_0.txt" \
      using ($1):($2)/($1)\
      with linespoints title "lws 2 GPU" ls 5 lw 2 pt 5, \
-     # "./output/perf_2_dmdar_0_1.2.txt" \
-     # using ($1):($2)/($1) \
-     # with linespoints title "dmdar 2 GPU beta=1.2" ls 6 lw 2 pt -1, \
-     # "./output/perf_2_dmdar_0_1.4.txt" \
-     # using ($1):($2)/($1) \
-     # with linespoints title "dmdar 2 GPU beta=1.4" ls 7 lw 2 pt -1, \
-     # "./output/perf_2_dmdar_0_0.8.txt" \
-     # using ($1):($2)/($1) \
-     # with linespoints title "dmdar 2 GPU beta=0.8" ls 8 lw 2 pt -1, \
-     # "./output/perf_2_dmdar_0_0.6.txt" \
-     # using ($1):($2)/($1) \
-     # with linespoints title "dmdar 2 GPU beta=0.6" ls 9 lw 2 pt -1, \
-     # "./output/perf_2_dmdar_0_0.1.txt" \
-     # using ($1):($2)/($1) \
-     # with linespoints title "dmdar 2 GPU beta=0.1" ls 10 lw 2 pt -1, \
-     # "./output/perf_2_dmdar_0_10.txt" \
-     # using ($1):($2)/($1) \
-     # with linespoints title "dmdar 2 GPU beta=10" ls 11 lw 2 pt -1, \
+     "./output/perf_2_dmdar_0_1.2.txt" \
+     using ($1):($2)/($1) \
+     with linespoints title "dmdar 2 GPU beta=1.2" ls 6 lw 2 pt -1, \
+     "./output/perf_2_dmdar_0_1.4.txt" \
+     using ($1):($2)/($1) \
+     with linespoints title "dmdar 2 GPU beta=1.4" ls 7 lw 2 pt -1, \
+     "./output/perf_2_dmdar_0_0.8.txt" \
+     using ($1):($2)/($1) \
+     with linespoints title "dmdar 2 GPU beta=0.8" ls 8 lw 2 pt -1, \
+     "./output/perf_2_dmdar_0_0.6.txt" \
+     using ($1):($2)/($1) \
+     with linespoints title "dmdar 2 GPU beta=0.6" ls 9 lw 2 pt -1, \
+     "./output/perf_2_dmdar_0_0.1.txt" \
+     using ($1):($2)/($1) \
+     with linespoints title "dmdar 2 GPU beta=0.1" ls 10 lw 2 pt -1, \
+     "./output/perf_2_dmdar_0_10.txt" \
+     using ($1):($2)/($1) \
+     with linespoints title "dmdar 2 GPU beta=10" ls 11 lw 2 pt -1, \
 
 # set output 'load_gpu2_limit0.pdf'
 

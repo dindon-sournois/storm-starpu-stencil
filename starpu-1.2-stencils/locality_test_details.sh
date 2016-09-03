@@ -7,13 +7,13 @@ host="attila"
 ratio=0.8
 vector=3
 
-iter="100"
-limit_mem_fxt_list="0 200"
-domain_fxt_list="200"
+iter="200"
+# limit_mem_fxt_list="0 200"
+limit_mem_fxt_list="200"
+domain_fxt_list="600"
 nbgpus_fxt_list="1 2"
 
 function test_cache_oblivious_details() {
-    $compile > /dev/null
     cd "build-simgrid/output" || exit
 
     for domain in $domain_fxt_list; do
@@ -25,7 +25,7 @@ function test_cache_oblivious_details() {
             echo $foldername
 
             for nbgpus in $nbgpus_fxt_list; do
-                for sched in dmdar modular-heft; do
+                for sched in dmdar; do
                     targetname="$sched"_gpu"$nbgpus"/
                     mkdir $targetname 2> /dev/null
                     cd $targetname && echo $targetname >> "$results"
@@ -44,6 +44,18 @@ function test_cache_oblivious_details() {
                 cd .. > /dev/null
             done
 
+            for sched in modular-heft; do
+                nbgpus=1;
+                targetname="$sched"_gpu"$nbgpus"/
+                mkdir $targetname 2> /dev/null
+                cd $targetname && echo $targetname >> "$results"
+                echo "starting $sched gpu $nbgpus problem $problem iter $iter limit $limit_mem"
+                STARPU_HOSTNAME=$host STARPU_NCPUS=0 STARPU_NCUDA=2 STARPU_NOPENCL=0 STARPU_LIMIT_CUDA_MEM=$limit_mem STARPU_SCHED=$sched ../../../tests/datawizard/locality --domain-size $domain --vector-size $vector --iterations $iter --silent --cfg=maxmin/precision:0.0001
+                ../../../tools/starpu_fxt_tool -i /tmp/prof_file_llucido_0 -r "$ratio"
+                cd .. > /dev/null
+            done
+
+
             cd .. > /dev/null
         done
     done
@@ -52,7 +64,6 @@ function test_cache_oblivious_details() {
 }
 
 function test_prefetch() {
-    $compile > /dev/null
     cd "build-simgrid/output" || exit
 
     for domain in $domain_fxt_list; do
@@ -79,7 +90,6 @@ function test_prefetch() {
 }
 
 function test_prio() {
-    $compile > /dev/null
     cd "build-simgrid/output" || exit
 
     for domain in $domain_fxt_list; do
@@ -108,8 +118,8 @@ function test_prio() {
 }
 
 test_cache_oblivious_details
-test_prefetch
-test_prio
+# test_prefetch
+# test_prio
 
 unset STARPU_HOSTNAME
 exit 0

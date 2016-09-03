@@ -15,8 +15,12 @@
 
 #+LATEX_HEADER: \usepackage[backend=bibtex]{biblatex}
 #+LATEX_HEADER: \usepackage{csquotes}
-#+LaTeX_HEADER: \addbibresource{biblio.bib}
+#+LATEX_HEADER: \addbibresource{rapport.bib}
 
+#+LATEX_HEADER: \usepackage{subfig}
+#+LATEX_HEADER: \captionsetup[subfloat]{%
+#+LATEX_HEADER:  font=footnotesize,
+#+LATEX_HEADER:  indention=10pt}
 # #+LaTeX_HEADER: \usepackage{minted}
 # #+LaTeX_HEADER: \usemintedstyle{emacs}
 # #+LaTeX_HEADER: \newminted{common-lisp}{fontsize=\footnotesize}
@@ -24,11 +28,12 @@
 #+LATEX_HEADER: \newcommand{\Title}{Ordonnancement d'applications de type stencil sur cluster hybrides CPU/GPU}
 #+LATEX_HEADER: \newcommand{\DueDate}{9\ septembre\ 2016}
 #+LATEX_HEADER: \newcommand{\Length}{juin - août}
-#+LATEX_HEADER: \newcommand{\Class}{Rapport de stage optionnel Master 1}
+#+LATEX_HEADER: \newcommand{\Class}{Rapport de stage optionnel de Master 1}
 #+LATEX_HEADER: \newcommand{\Institute}{Équipe \textsc{Storm}, Inria - LaBRI, centre de recherche Inria Bordeaux - Sud-Ouest }
 #+LATEX_HEADER: \newcommand{\University}{Université de Bordeaux~: Sciences et Technologies}
 #+LATEX_HEADER: \newcommand{\Author}{Loris Lucido}
 #+LATEX_HEADER: \newcommand{\Supervisor}{Olivier Aumage, Samuel Thibault}
+#+LATEX_HEADER: \newcommand{\HRule}{\rule{\linewidth}{0.5mm}\newline}
 
 # #+NAME: setup-minted
 # #+BEGIN_SRC emacs-lisp :exports both :results silent
@@ -51,14 +56,18 @@
 \begin{titlepage}
   \centering
   \includegraphics[width=0.3\linewidth]{img/logo-inria.png}
-  \includegraphics[width=0.2\linewidth]{img/logo-labri.jpg}
+  \hspace*{\fill}
+  \includegraphics[width=0.18\linewidth]{img/logo-labri.jpg}
+  \hspace*{\fill}
   \includegraphics[width=0.3\linewidth]{img/logo-u-bordeaux.jpg}
   \par\vspace{1cm}
   {\scshape\LARGE \University\par}
   \vspace{0.5cm}
   {\Large \Class\par}
   \vfill
+  \HRule
   {\huge\bfseries \Title\par}
+  \HRule
   \vfill
   {\Large\itshape \Author\par}
   \vfill

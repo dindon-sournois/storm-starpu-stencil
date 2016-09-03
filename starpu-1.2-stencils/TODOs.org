@@ -104,6 +104,8 @@
 ** pourquoi dmdar tient tete a cachoe oblivious malgre les transferts ? recouvrement
 * TODO donner les sources de toutes les courbes
 ** bien precifer les conditions d'experimentation
-* TODO charge: dmdar + co 2 GPU
-* TODO charge dyn, prendre 1/4 du domaine faire bouger le curseur une seule fois
-* TODO sans limite memoire pour l'instant
+* DONE charge: dmdar + co 2 GPU
+  CLOSED: [2016-09-03 Sat 10:09]
+** DONE charge dyn, prendre 1/4 du domaine faire bouger le curseur une seule fois
+   CLOSED: [2016-09-03 Sat 10:09]
+** sans limite memoire pour l'instant

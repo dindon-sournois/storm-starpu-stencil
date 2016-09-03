@@ -11,7 +11,8 @@
    Dans le domaine du calcul haute performance, il est d'usage d'utiliser
    plusieurs unités de calculs en parallèle afin de traiter des problèmes de
    plus en plus rapidement. Ces unités de calculs peuvent être des CPUs
-   (processeur) ou des GPUs (carte graphique).
+   (processeur) ou des GPUs (carte graphique). Dans la suite de ce rapport, nous
+   appellerons /ouvrier/ une unité de calcul (CPU ou GPU).
 
    Afin d'utiliser au mieux ce matériel, il convient d'utiliser des paradigmes
    de programmation adapté. Une méthode qui a déjà était le sujet de nombreuses
@@ -75,19 +76,22 @@
 :PROPERTIES:
 :CUSTOM_ID: sec:contexte
 :END:
+   Dans cette section, nous présentons le contexte du stage. Nous revenons plus
+   en détails sur la programmation parallèle en tâches, sur les supports
+   d'exécution ainsi que sur les particularités des applications stencil.
 ** Ordonnancer un ensemble de tâches
-
-   L'objectif étant de minimiser le temps de calcul global de toutes les tâches,
-   une question récurrente lorsqu'on programme des tâches est de savoir à qui
-   demande-t-on de calculer une tâches parmi toutes les unités de calcul
-   disponibles. Lorsque l'on souhaite n'utiliser que des CPUs, une solution
-   consiste à laisser l'ordonnancement des tâches au système d'exploitation.
-   Cette solution perd de son sens lorsque qu'on y ajoute un ou plusieurs GPUs.
-   De plus, le système d'exploitation n'a pas conscience des autres machines
-   reliées au réseau.
+   Ordonnancer une tâche signifie demander à un ouvrier (une unité de calcul)
+   d'exécuter cette tâche. L'objectif étant de minimiser le temps de calcul
+   global de toutes les tâches, une question récurrente lorsqu'on programme des
+   tâches est de savoir à qui demande-t-on de calculer une tâches parmi toutes
+   les unités de calcul disponibles. Lorsque l'on souhaite n'utiliser que des
+   CPUs, une solution consiste à laisser l'ordonnancement des tâches au système
+   d'exploitation. Cette solution perd de son sens lorsque qu'on y ajoute un ou
+   plusieurs GPUs. De plus, le système d'exploitation n'a pas conscience des
+   autres machines reliées au réseau.
 
    Une autre solution consiste à laisser l'utilisateur assigner, une à une, les
-   tâches à une unité de calcul. Enfin, et c'est le sujet de ce stage, nous
+   tâches à un ouvrier. Enfin, et c'est le sujet de ce stage, nous
    pouvons laisser l'ordonnancement à des supports d'exécution ou /runtime/ qui
    vont décider pour chaque tâche sur quelle unité ou quelle machine il convient
    de la calculer.
@@ -107,16 +111,17 @@
    d'architecture hétérogène. Les GPUs (/Graphics Processing Unit/) sont les
    unités de calcul des carte graphique. Ils sont généralement bien plus rapide
    que des CPUs pour certaines tâches comme le graphisme. Ils sont aussi
-   beaucoup utilisés en calcul haute performance pour faire du calcul généraliste.
+   beaucoup utilisés en calcul haute performance pour faire du calcul
+   généraliste.
 
-   Comme illustré figure [[fig:memarch]] chaque carte graphique dispose de sa propre mémoire.
-   Celle-ci est cependant plus limitée en volume que la mémoire principale, soit
-   quelques Go pour une carte graphique contre plusieurs dizaines de Go pour la
-   mémoire principale. De plus, les unités de calcul d'une carte graphique ne
-   peuvent pas directement avoir accès à la mémoire principale. Lorsque l'on
-   souhaite accéder à une donnée, il faut la charger depuis la mémoire
-   principale vers la mémoire de la carte graphique. La latence étant plus
-   élevée qu'un accès par un CPU.
+   Comme illustré figure [[fig:memarch]] chaque carte graphique dispose de sa propre
+   mémoire. Celle-ci est cependant plus limitée en volume que la mémoire
+   principale, soit quelques Go pour une carte graphique contre plusieurs
+   dizaines de Go pour la mémoire principale. De plus, les unités de calcul
+   d'une carte graphique ne peuvent pas directement avoir accès à la mémoire
+   principale. Lorsque l'on souhaite accéder à une donnée, il faut la charger
+   depuis la mémoire principale vers la mémoire de la carte graphique. La
+   latence étant plus élevée qu'un accès par un CPU.
 
 #+NAME: fig:memarch
 #+CAPTION: Topologie mémoire d'une machine avec deux cartes graphiques.
@@ -153,10 +158,8 @@
     d'ordonnancement ou ordonnanceurs. Nous détaillons quelques exemples section
     [[#sec:detail-sched]].
 ** Applications stencils
-
    Pour notre étude, nous utiliserons comme stencil un prototype jouet simple
    afin de faciliter l'analyse des expériences.
-
 *** Schéma de calcul particulier des stencils
     :PROPERTIES:
     :CUSTOM_ID: sec:com-stencils
@@ -172,6 +175,10 @@
  # - decoupage par blocs / taches, schema dep taches precedentes
 
 *** Économiser de la bande passante
+:PROPERTIES:
+:CUSTOM_ID: sec:stencil-bandwidth
+:END:
+
     Nous nous intéresserons surtout aux problèmes de taille supérieur à la
     mémoire disponible. Ainsi, il ne sera pas possible de stocker l'intégralité
     des données du problème étudié en mémoire GPU, il faudra donc évincer
@@ -180,7 +187,7 @@
 
     Pour limiter le volume de données transférées, il est nécessaire de
     réutiliser les données déjà présentes en mémoire plutôt que d'en transférer
-    de nouvelles. Pour cela, nous pouvons travailler sur la localité en espace
+    de nouvelles. Pour cela, nous pouvons travailler sur la *localité en espace*
     des données en se basant sur l'affirmation suivante : si un emplacement
     mémoire est référencé, il est très probable que les emplacements mémoires
     voisins seront aussi référencés dans un futur proche. Cette affirmation se
@@ -188,10 +195,30 @@
 
     De plus, du à la nature algorithmique itérative d'un stencil, chaque
     emplacement mémoire est accédé à chaque nouvelle itération sur le stencil.
-    Nous aimerions alors travailler sur la localité temporelle des données.
+    Nous aimerions alors travailler sur la *localité temporelle* des données.
     Ainsi, plutôt que de mettre à jour tous les éléments les uns à la suite des
     autres, nous pouvons faire évoluer un petit morceau du domaine. Cela en
-    traitant plusieurs itérations de manières successives, comme illustrée figure *???*.
+    traitant plusieurs itérations de manières successives, comme illustrée
+    figure [[fig:local-iter]].
+
+#+NAME: fig:local-iter
+#+CAPTION: Localité
+#+ATTR_LATEX: :width 0.5\linewidth
+[[file:img/local-iter.png]]
+
+** Répartition de charge
+
+   Pour certain type d'application stencil comme la prévision météo, il est
+   courant d'utiliser des heuristiques plus ou moins précises (et donc
+   coûteuses) selon le domaine. Par exemple, on utilisera une heuristique plus
+   approximative pour prévoir le temps qu'il fera sur une région ensoleillée que
+   sur une région nuageuse.
+
+   Dans la section [[#sec:load-balance]] nous évaluerons les performances de
+   certaines méthodes face à une répartition de charge déséquilibrée. Nous
+   regarderons en particulier une répartition de charge statique (où le
+   déséquilibre est fixée au départ) et dynamique (où le déséquilibre évolue au
+   cours du temps, comme cela peut-être le cas pour la prévision météo).
 
 ** État de l'art
 *** Les contraintes des applications stencils
@@ -212,18 +239,18 @@
     Le domaine des stencils reste un problème très étudié en calcul haute
     performance. Cependant, la répartition des calculs est en général fait à la
     main. Des travaux ont aussi portés sur des algorithmes caches oblivieux ou
-    /oblivious/ adaptés aux stencils. Ceux-ci tentent de minimiser le nombre de
-    défauts de cache (TODO: définir cette notion) sans connaître la taille du
-    cache. Pour cela, on maximise la réutilisation des données
-    cite:frigo-co-stencil. Cela nécessite aussi une charge de travail
-    supplémentaire pour l'utilisateur.
+    /oblivious/ adaptés aux stencils cite:frigo-co-stencil. Ceux-ci tentent de
+    minimiser le nombre de défauts de cache (TODO: définir cette notion) sans
+    connaître la taille du cache. Pour cela, on maximise la réutilisation des
+    données . Cela nécessite aussi une charge de travail supplémentaire pour
+    l'utilisateur.
 
     De précédents travaux dans l'équipe /STORM/ portant sur des applications
     d'algèbre linéaire dense, creuse et compressée ont montré que le support
     d'exécution /StarPU/ pouvait apporter des performances similaires qu'un code
     taillé sur mesure. En revanche, peu de travaux ont été réalisés dans
     l'équipe concernant les stencils. Nous voulons savoir si les
-    supports d'exécution peuvent traiter ce problème de manière générique.
+    supports d'exécution peuvent traiter ce problème de manière *générique*.
 
     Pour s'assurer que le support d'exécution prend des décisions
     d'ordonnancement favorisant la localité, nous avons besoins d'outils de
@@ -236,73 +263,167 @@
 :CUSTOM_ID: sec:contrib
 :END:
 ** Résumé de la contribution
+   Nous avons étudié le comportement du support d'exécution /StarPU/ pour des
+   applications stencils. Pour les évaluer, nous les comparons avec une méthode
+   très spécifique aux stencils (et donc non générique) qui nécessite des
+   changements dans l'application : il s'agit de l'algorithme de soumission de
+   tâches cache oblivieux.
 
+   Pour comprendre les performances obtenues avec /StarPU/, nous avons besoin
+   d'observer la localité en espace et en temps des données. Ceci permettant de
+   réduire le volume des transferts mémoires. Nous avons écrit des outils de
+   visualisation adaptés.
+
+   Enfin, nous avons écrit un ordonnanceur simple adapté aux applications de
+   type stencil.
+** Ordonnanceurs : recouvrir les transferts mémoires et localité des données
+   :PROPERTIES:
+   :CUSTOM_ID: sec:detail-sched
+   :END:
+*** /Eager/ (=eager= et =prio=)
+    L'ordonnanceur =eager= utilise une seule liste centralisée pour tous les
+    ouvriers. Il distribue les tâches aux ouvriers suivant un ordonnancement
+    tourniquet ou /round-robin/. Il existe une variante de =eager= appelée
+    =prio=. Celle-ci prend en compte les priorités que l'application peut
+    assigner aux tâches. Elle ordonnance les tâches à priorité élevée en
+    premier.
+
+    Cette ordonnanceur ne travail pas du tout sur la localité des données.
+    Cependant, en utilisant cette ordonnanceur, l'application peut feindre de la
+    localité des données. Pour cela nous attribuons une priorité croissante avec
+    le numéro d'itération. Nous espérons ainsi que l'ordonnanceur ait tendance à
+    faire évoluer des groupes de cellules proches comme illustré sur la figure
+    [[fig:local-iter]]. Nous vérifions cela section [[#sec:prio-locality]].
+*** /Deque Model Data Aware/ (=dmda= et =dmdar=)
+  Chaque ouvrier dispose de sa propre file de tâches. Lorsque l'ordonnanceur
+  =dmda= souhaite assigner une tâche, il calcule pour chaque ouvrier une date de
+  terminaison de la tâche. Cette date dépend du nombre de tâches pas encore
+  terminées présentes dans la file, de la durée de la tâche et de la vitesse de
+  calcul de l'ouvrier. =dmda= prend aussi en compte la durée nécessaire au
+  transfert des données de la tâche comme illustrée figure \ref{fig:dmda}. Cela
+  réduit les transferts entre mémoire GPU et mémoire principale.
+
+  =dmdar= est une variante de =dmda= qui trie les files des unités de calcul par
+  quantité de données déjà disponibles dans la mémoire de l'ouvrier. Cela permet
+  de maximiser le recouvrement des transferts par du calcul.
+#+BEGIN_LATEX
+\begin{figure}
+\centering
+\hspace*{\fill}
+\subfloat[Situation de départ.]
+  {\includegraphics[width=0.3\linewidth]{img/gantt1.pdf}}
+\hspace*{\fill}
+\subfloat[On calcule le temps de calcul de la tâche en vert.]
+  {\includegraphics[width=0.3\linewidth]{img/gantt2.pdf}}
+\hspace*{\fill}
+\subfloat[Recherche du temps de terminaison minimum.]
+  {\includegraphics[width=0.3\linewidth]{img/gantt3.pdf}}
+\hspace*{\fill}
+\newline
+\hspace*{\fill}
+\subfloat[Le GPU 2 semble être le meilleur candidat.]
+  {\includegraphics[width=0.3\linewidth]{img/gantt4.pdf}}
+\hspace*{\fill}
+\subfloat[Cette fois-ci, on prend en compte les temps de transferts en rouge.
+          Le meilleur candidat est donc le CPU 3.]
+  {\includegraphics[width=0.3\linewidth]{img/gantt5.pdf}}
+\hspace*{\fill}
+\caption{\label{fig:dmda}
+Ordonnancement d'une tâche pour l'ordonnanceur \texttt{dmda}.}
+\end{figure}
+#+END_LATEX
+*** /Locality Work Stealing/ (=lws=)
+    L'ordonnanceur =lws= distribue les tâches aux différents ouvriers en
+    fonction de la charge (durée de la tâche) et de la localité des données.
+    Un ouvrier pourra faire du vol travail s'il se retrouve inactif. Il pourra
+    alors aller prendre une tâche d'un ouvrier voisin déjà bien chargé.
+    L'ordonnanceur =lws= est illustré figure [[fig:sched_ws]].
+
+     # plus de transferts en les noeuds mémoire que cache oblivious
+#+NAME: fig:sched_ws
+#+CAPTION: Ordonnanceur =lws= (/Work Stealing/).
+#+ATTR_LATEX: :width 0.5\linewidth
+[[file:img/sched_ws.png]]
+
+*** Heteroprio
+     # - heteroprio (https://hal.inria.fr/hal-00807368) qui est centralisé comme
+     # - eager, mais regarde combien les tâches sont accélérées pour décider # -
+     # - entre CPU et GPU
+*** /Modular-heft/
+** Méthode de référence : Algorithme cache oblivieux de soumission de tâches
+    Pour évaluer les ordonnanceurs du support d'exécution /StarPU/, nous avons
+    besoin d'une méthode de référence. Pour cela, nous utilisons le résultat de
+    précédentes recherches portant sur un algorithme cache oblivieux adaptés au
+    stencil cite:frigo-co-stencil.
+
+    Cet algorithme décrit un ordre dans lequel faire les mises à jour des
+    cellules qui favorise la réutilisation des données. Nous n'utilisons pas
+    d'ordonnanceurs et laissons l'utilisateur décider quelle tâche sera exécutée
+    sur quel ouvrier et dans quel ordre. Nous soumettons les tâches dans l'ordre
+    dicté par l'algorithme cache oblivieux afin de limiter le volume de données
+    transférées. À priori, il devrait s'agit de la méthode idéale lorsque le
+    problème étudié est trop grand pour rentrer en mémoire GPU.
+
+    L'algorithme étant adapté pour une exécution séquentiel, il a fallu
+    l'adapter pour une exécution parallèle. Pour cela, nous découpons le
+    problème en autant de sous-domaines que nous disposons de cartes graphiques.
+    Nous appliquons un l'algorithme cache oblivieux de manière locale pour
+    chaque sous-domaine.
+
+** Outils de visualisation
+   Maintenant que nous avons une méthode de référence, il faut pouvoir
+   comprendre ce que les ordonnanceurs font de bien ou mal. L'outil /StarPU/
+   dispose déjà d'outil d'analyse de traces qui permettent d'observer si un
+   ouvrier est actif ainsi que les transferts mémoires, et cela pour chaque
+   instant de l'exécution. Cela ne nous suffit pas, en effet, nous voulons
+   observer la localité des données.
+*** Diagramme d'exécution : domaine en fonction du temps
+    Un exemple d'un tel diagramme est donné figure \ref{fig:example-xpm}. Sur ce
+    diagramme nous pouvons observer quel ouvrier (couleur rouge, bleu, et vert)
+    a travaillé sur quel morceau du domaine (axe des ordonnées) et à quel
+    instant dans l'exécution (axe des abscisses). Nous pouvons aussi voir les
+    transferts mémoires (couleur cyan, magenta et jaune).
+#+BEGIN_LATEX
+\begin{figure}
+\centering
+\subfloat[Exécution avec deux GPUs.]
+  {\includegraphics[width=0.9\linewidth]{img/example.png}}
+  \newline
+\subfloat[Légende.]
+  {\includegraphics[width=0.6\linewidth]{img/xpm-legend.png}}
+\caption{\label{fig:example-xpm}
+Exemple de diagramme d'exécution des tâches : domaine en fonction du temps.}
+\end{figure}
+#+END_LATEX
+*** Diagramme d'exécution : domaine en fonction des itérations
+    Un exemple d'un tel diagramme est donné figure \ref{fig:example-iter-xpm}.
+    Sur ce diagramme nous pouvons observer quel ouvrier a travaillé sur quel
+    morceau du domaine et à quelle itération du stencil. En noir sont aussi
+    affichées des courbes isochrones. Elle permettent d'intégrer une dimension
+    temporelle dans le diagramme. Tout ce qui se trouve entre deux courbes
+    isochrones à la verticale s'est déroulé durant le même laps de
+    temps.
+#+BEGIN_LATEX
+\begin{figure}
+\centering
+\hspace*{\fill}
+\subfloat[Exécution avec deux GPUs.]
+  {\includegraphics[width=0.2\linewidth]{img/example-iter.png}}
+\hspace*{\fill}
+\subfloat[Légende.]
+  {\includegraphics[width=0.6\linewidth]{img/xpm-legend-iter.png}}
+\hspace*{\fill}
+\caption{\label{fig:example-iter-xpm}
+Exemple de diagramme d'exécution des tâches : domaine en fonction des itérations.}
+\end{figure}
+#+END_LATEX
+
+** Évaluation
  - Comportement des ordonnanceurs de StarPU, 3 métriques à considérer
    + temps d'exécution
    + surcoût : temps passé à ordonnancer les tâches
    + volume des transferts GPU/GPU ou CPU/GPU
  - rappel : on s'intéresse surtout aux cas où on a pas assez de mémoire
- - Pour réduire le volume de communication. : travail sur la localité
- - Pour observer la localité : prototype d'outils de visualisation
- - Utiliser une méthode de référence : cache oblivious
-
-** Méthode de référence
-*** Ordonnacement : recouvrir les transferts mémoire et localité dans l'espace
-:PROPERTIES:
-:CUSTOM_ID: sec:detail-sched
-:END:
-
-   - deque model data aware ready (dmdar)
-   - figure diagramme de gantt avec plusieurs noeuds et mises en avant des transferts
-   - on explique dmdar (/data aware/ et /ready tasks/)
-   - c'est un ordonnanceurs parmis d'autres, donner des exemples supplémentaires
-     d'ordonnanceurs *???*
-     # - eager qui utilise une seule liste centralisée, avec une variante prio qui
-     # prend les priorités en compte.
-
-     # - work stealing qui distribue les tâches
-     # en fonction de la charge sans se poser de question de localité quand il
-     # n'a pas d'information, et qui ordonnance sur la localité s'il en a, et
-     # fait du work stealing si un CPU/GPU devient idle - plus de transferts en
-     # les noeuds mémoire que cache oblivious
-
-     # - heteroprio (https://hal.inria.fr/hal-00807368) qui est centralisé comme
-     # - eager, mais regarde combien les tâches sont accélérées pour décider # -
-     # - entre CPU et GPU
-   - /data/ et /ready aware/ on fait du recouvrement
-   - pas beaucoup de quoi recouvrir pour les stencils, à confirmer section évaluation
-*** Algorithme cache oblivious de soumission de tâches
-   - cache oblivious sequentiel cite:frigo-co-stencil
-   - on bricole une version parallèle
-   - on limite au mimimum les /cache misses/ ou plutôt les transferts mémoire
-   - méthode idéale même lorsque la mémoire est limité
-   - charge statique
-*** répartition de charge : peut-être mettre ça dans l'introduction (ETA)
-
-     + répartition de charge dynamique (en fonction du temps) : avoir recours à des partitionneurs, c'est pas du tout trivial (mettre références)
-     + ref AMR
-
-** (prototype *???* Outils de visualisation
-
-# ce qu'il faudrait expliquer au début de cette section, c'est que là, comme ça,
-# on ne sait pas vraiment ce que dmdar fait de bien ou mal, on a besoin d'outils
-# adaptés pour observer ce qui se passe. Les traces vite montre ce qui se passe,
-# mais la vue n'est pas adaptée au cas du stencil: elles ne montrent pas la
-# localité des données.
-
-   On explique à quoi servent les figures, ce qu'elles représentent, ce qu'elles
-permettent de visualiser ici *???* ou bien parti évaluation lors d'une étude de cas
-
-*** Format utilisé
-    - on génère une image au format X-Pixmap
-    - /parsing/ de traces générées durant l'exécution
-*** Diagramme d'exécution du domaine en fonction du temps
-    - comment on détermine le domaine de manière automatique
-*** Diagramme d'exécution du domaine en fonction des itérations
-    - symbolique des isochrones
-
-** Évaluation
-
 # Expérimentation : montrer et donc expliquer certaines courbes ou images intéressantes
 # Permet d'appuyer la pertinence des travaux présentés
 
@@ -351,11 +472,18 @@ permettent de visualiser ici *???* ou bien parti évaluation lors d'une étude d
     # d'aussi bien que cache oblivious", et puis ensuite "ah ben en fait c'est
     # beaucoup mieux"
 *** répartition de charge inégale : cache oblivious à la traine
+:PROPERTIES:
+:CUSTOM_ID: sec:load-balance
+:END:
 
       * et si on prédécoupe à la main, est-ce intéressant à montrer *???*
       # c'est intéressant de montrer qu'en prédécoupant à la main on retrouve un
       # équilibre de charge, oui, mais là on enfonce le clou en utilisant une
       # répartition de charge dynamique
+
+    + répartition de charge dynamique (en fonction du temps) : avoir recours à
+      des partitionneurs, c'est pas du tout trivial (mettre références)
+    + ref AMR
 #+NAME: fig:load_gpu2_limit0
 #+CAPTION: Influence de répartitions de charge inégales sur l'ordonnanceur =dmdar=
 #+CAPTION: et via une soumission des tâches cache oblivieux - deux GPU, pas de
@@ -364,6 +492,11 @@ permettent de visualiser ici *???* ou bien parti évaluation lors d'une étude d
 [[file:exp/load_gpu2_limit0.pdf]]
 
 *** cache oblivious mirroir ou pas mirroir
+*** prio locality
+:PROPERTIES:
+:CUSTOM_ID: sec:prio-locality
+:END:
+
 *** que faut-il en retenir
 
 * Conclusion
