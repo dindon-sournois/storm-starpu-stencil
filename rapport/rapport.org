@@ -18,12 +18,12 @@
    de programmation adapté. Une méthode qui a déjà était le sujet de nombreuses
    recherches est la programmation en tâches. Une tâche représente un
    sous-ensemble du problème à résoudre. Programmer avec des tâches consiste
-   donc à construire plusieurs sous-ensemble du problème et définir comment chaque
-   sous-ensemble est lié aux autres sous-ensembles à l'aide de dépendances de
-   tâches. Nous obtenons alors un arbre de dépendances de tâches. Enfin nous
-   les donnons à résoudre à des unités de calcul différentes dans un ordre qui
-   dépend de l'arbre de tâches construit. Un exemple de graphe de dépendances de
-   tâches est illustré figure [[fig:task-deps]].
+   donc à construire plusieurs sous-ensemble du problème et définir comment
+   chaque sous-ensemble est lié aux autres sous-ensembles à l'aide de
+   dépendances de tâches. Nous obtenons alors un arbre de dépendances de tâches.
+   Enfin nous les donnons à résoudre à des unités de calcul différentes dans un
+   ordre qui dépend de l'arbre de tâches construit. Un exemple de graphe de
+   dépendances de tâches est illustré figure [[fig:task-deps]].
 
 #+NAME: fig:task-deps
 #+CAPTION: Graphe de dépendances de tâches.
@@ -46,7 +46,6 @@
     regrouper suffisamment de mises à jour pour que cette tâche représente un
     calcul conséquent.
 
-# grille avec arrow pour representer les dept
 #+NAME: fig:3D_stencil
 #+CAPTION: Stencil 6-points 3D - La mise à jour d'un élément se fait ici à partir
 #+CAPTION: des 6 éléments voisins cite:6points-stencil.
@@ -172,6 +171,7 @@
     entre les différents noeuds mémoires par du calcul. Il faut alors faire de
     la réutilisation des données.
 
+# grille avec arrow pour representer les dept
  # - decoupage par blocs / taches, schema dep taches precedentes
 
 *** Économiser de la bande passante
@@ -280,6 +280,9 @@
    :PROPERTIES:
    :CUSTOM_ID: sec:detail-sched
    :END:
+   Nous allons décrire dans cette section quelques ordonnanceurs du support
+   d'exécution /StarPU/. C'est généralement l'application qui décide du type
+   d'ordonnnanceur à utiliser.
 *** /Eager/ (=eager= et =prio=)
     L'ordonnanceur =eager= utilise une seule liste centralisée pour tous les
     ouvriers. Il distribue les tâches aux ouvriers suivant un ordonnancement
@@ -311,22 +314,22 @@
 \centering
 \hspace*{\fill}
 \subfloat[Situation de départ.]
-  {\includegraphics[width=0.3\linewidth]{img/gantt1.pdf}}
+  {\includegraphics[width=0.3\linewidth]{img/sched_dmda_1.pdf}}
 \hspace*{\fill}
 \subfloat[On calcule le temps de calcul de la tâche en vert.]
-  {\includegraphics[width=0.3\linewidth]{img/gantt2.pdf}}
+  {\includegraphics[width=0.3\linewidth]{img/sched_dmda_2.pdf}}
 \hspace*{\fill}
 \subfloat[Recherche du temps de terminaison minimum.]
-  {\includegraphics[width=0.3\linewidth]{img/gantt3.pdf}}
+  {\includegraphics[width=0.3\linewidth]{img/sched_dmda_3.pdf}}
 \hspace*{\fill}
 \newline
 \hspace*{\fill}
 \subfloat[Le GPU 2 semble être le meilleur candidat.]
-  {\includegraphics[width=0.3\linewidth]{img/gantt4.pdf}}
+  {\includegraphics[width=0.3\linewidth]{img/sched_dmda_4.pdf}}
 \hspace*{\fill}
 \subfloat[Cette fois-ci, on prend en compte les temps de transferts en rouge.
           Le meilleur candidat est donc le CPU 3.]
-  {\includegraphics[width=0.3\linewidth]{img/gantt5.pdf}}
+  {\includegraphics[width=0.3\linewidth]{img/sched_dmda_5.pdf}}
 \hspace*{\fill}
 \caption{\label{fig:dmda}
 Ordonnancement d'une tâche pour l'ordonnanceur \texttt{dmda}.}
@@ -339,17 +342,38 @@ Ordonnancement d'une tâche pour l'ordonnanceur \texttt{dmda}.}
     alors aller prendre une tâche d'un ouvrier voisin déjà bien chargé.
     L'ordonnanceur =lws= est illustré figure [[fig:sched_ws]].
 
-     # plus de transferts en les noeuds mémoire que cache oblivious
+    # plus de transferts en les noeuds mémoire que cache oblivious
 #+NAME: fig:sched_ws
 #+CAPTION: Ordonnanceur =lws= (/Work Stealing/).
 #+ATTR_LATEX: :width 0.5\linewidth
 [[file:img/sched_ws.png]]
 
-*** Heteroprio
-     # - heteroprio (https://hal.inria.fr/hal-00807368) qui est centralisé comme
-     # - eager, mais regarde combien les tâches sont accélérées pour décider # -
-     # - entre CPU et GPU
+# *** Heteroprio
+# - heteroprio (https://hal.inria.fr/hal-00807368) qui est centralisé comme
+# - eager, mais regarde combien les tâches sont accélérées pour décider # -
+# - entre CPU et GPU
 *** /Modular-heft/
+    Cet ordonnanceur est illustré figure [[fig:sched_mod_heft]]. Sa particuliarité
+    est qu'il s'agit d'un ordonnanceur modulaire, construit par assemblage de
+    composants. Ainsi, il est aisé de construire un nouveau ordonnanceur en
+    ajoutant ou modifiant un composant.
+
+    Le principe est le suivant. Chaque ouvrier dispose de sa file de tâche. Tant
+    qu'il reste des tâches dans sa file, on récupère une tâche prête dans la
+    liste et on l'exécute. Une tâche prête est une tâche dont les données se
+    trouvent déjà en mémoire pour un noeud donné. Le recouvrement des transferts
+    mémoires est donc cruciaux ici.
+
+    Lorsque la liste est vide, on va aller
+    notifier le composant racine. Celui-ici va alors essayer de remplir la liste
+    de l'ouvrier qui a fait la demande avec des tâches dont les données lui sont
+    déjà accessibles.
+
+    Le composant /mct/ (/Manufacturing Critical Time/) ...
+#+NAME: fig:sched_mod_heft
+#+CAPTION: Ordonnanceur =modular-heft=.
+#+ATTR_LATEX: :width 0.7\linewidth
+[[file:img/sched_mod_heft.png]]
 ** Méthode de référence : Algorithme cache oblivieux de soumission de tâches
     Pour évaluer les ordonnanceurs du support d'exécution /StarPU/, nous avons
     besoin d'une méthode de référence. Pour cela, nous utilisons le résultat de
@@ -406,9 +430,10 @@ Exemple de diagramme d'exécution des tâches : domaine en fonction du temps.}
 #+BEGIN_LATEX
 \begin{figure}
 \centering
+\captionsetup{justification=centering}
 \hspace*{\fill}
 \subfloat[Exécution avec deux GPUs.]
-  {\includegraphics[width=0.2\linewidth]{img/example-iter.png}}
+  {\includegraphics[width=0.15\linewidth]{img/example-iter.png}}
 \hspace*{\fill}
 \subfloat[Légende.]
   {\includegraphics[width=0.6\linewidth]{img/xpm-legend-iter.png}}
