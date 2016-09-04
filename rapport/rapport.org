@@ -21,8 +21,8 @@
    donc à construire plusieurs sous-ensemble du problème et définir comment
    chaque sous-ensemble est lié aux autres sous-ensembles à l'aide de
    dépendances de tâches. Nous obtenons alors un arbre de dépendances de tâches.
-   Enfin nous les donnons à résoudre à des unités de calcul différentes dans un
-   ordre qui dépend de l'arbre de tâches construit. Un exemple de graphe de
+   Enfin nous les donnons à résoudre à des ouvriers différents, dans un ordre
+   qui dépend de l'arbre de tâches construit. Un exemple de graphe de
    dépendances de tâches est illustré figure [[fig:task-deps]].
 
 #+NAME: fig:task-deps
@@ -31,20 +31,20 @@
 [[file:img/task-deps.pdf]]
 
 ** Qu'est-ce qu'une application stencil ?
-    Il s'agit d'une classe d'algorithmes beaucoup utilisé en simulation (telle
-    que simulation de gaz ou de propagation de chaleur). Un tel algorithme
-    permet généralement de discrétiser des phénomènes physiques locaux sur des
-    grilles régulières.
+   Il s'agit d'une classe d'algorithmes beaucoup utilisé en simulation (telle
+   que simulation de gaz ou de propagation de chaleur). Un tel algorithme
+   permet généralement de discrétiser des phénomènes physiques locaux sur des
+   grilles régulières.
 
-    La dimension temporelle est exprimée par des itérations. Une itération
-    consiste à appliquer une petite fonction sur chaque cellule d'une grille.
-    Cette fonction ayant la particularité de mettre à jour le contenu d'une
-    cellule en fonction de son voisinage (illustrée figure [[fig:3D_stencil]]).
+   La dimension temporelle est exprimée par des itérations. Une itération
+   consiste à appliquer une petite fonction sur chaque cellule d'une grille.
+   Cette fonction ayant la particularité de mettre à jour le contenu d'une
+   cellule en fonction de son voisinage (illustrée figure [[fig:3D_stencil]]).
 
-    Pour résoudre un problème stencil à l'aide de tâches, nous pouvons regrouper
-    plusieurs mises à jour de cellules voisines en une tâche. Il faut alors
-    regrouper suffisamment de mises à jour pour que cette tâche représente un
-    calcul conséquent.
+   Pour résoudre un problème stencil à l'aide de tâches, nous pouvons regrouper
+   plusieurs mises à jour de cellules voisines en une tâche. Il faut alors
+   regrouper suffisamment de mises à jour pour que cette tâche représente un
+   calcul conséquent.
 
 #+NAME: fig:3D_stencil
 #+CAPTION: Stencil 6-points 3D - La mise à jour d'un élément se fait ici à partir
@@ -55,7 +55,8 @@
    Un support d'exécution est une couche logicielle permettant de traiter des
    problèmes de calcul haute performance de manière générique. Au cours du stage
    nous avons cherché à savoir si /StarPU/, le support d'exécution développé
-   dans l'équipe, peut aussi traiter des applications stencil efficacement.
+   dans l'équipe /STORM/, peut aussi traiter des applications stencil
+   efficacement.
 
    Dans la section [[#sec:contexte]] nous discuterons du contexte du stage. Nous
    reviendrons en détail sur les particularités des applications stencil, sur la
@@ -82,45 +83,43 @@
    Ordonnancer une tâche signifie demander à un ouvrier (une unité de calcul)
    d'exécuter cette tâche. L'objectif étant de minimiser le temps de calcul
    global de toutes les tâches, une question récurrente lorsqu'on programme des
-   tâches est de savoir à qui demande-t-on de calculer une tâches parmi toutes
-   les unités de calcul disponibles. Lorsque l'on souhaite n'utiliser que des
-   CPUs, une solution consiste à laisser l'ordonnancement des tâches au système
+   tâches est de savoir à qui demande-t-on de calculer une tâches parmi tous les
+   ouvriers disponibles. Lorsque l'on ne souhaite utiliser que des CPUs, une
+   solution consiste à laisser l'ordonnancement des tâches au système
    d'exploitation. Cette solution perd de son sens lorsque qu'on y ajoute un ou
-   plusieurs GPUs. De plus, le système d'exploitation n'a pas conscience des
-   autres machines reliées au réseau.
+   plusieurs GPUs. De plus, les politiques d'ordonnancement du système
+   d'exploitation ne sont jamais adaptées à l'application.
 
    Une autre solution consiste à laisser l'utilisateur assigner, une à une, les
-   tâches à un ouvrier. Enfin, et c'est le sujet de ce stage, nous
-   pouvons laisser l'ordonnancement à des supports d'exécution ou /runtime/ qui
-   vont décider pour chaque tâche sur quelle unité ou quelle machine il convient
-   de la calculer.
+   tâches à un ouvrier. Enfin, et c'est le sujet de ce stage, nous pouvons
+   laisser l'ordonnancement à des supports d'exécution ou /runtime/ qui vont
+   décider pour chaque tâche sur quel ouvrier il convient de la calculer.
 
    L'objectif du stage consiste à étudier l'ordonnancement d'application de type
-   stencils (simulation de gaz, de propagation de chaleur, ...) dans un support
-   d'exécution. Nous étudierons en particulier l'ordonnancement de tâches dans
-   le support d'exécution /StarPU/, développé dans l'équipe /STORM/ Inria
-   Sud-ouest. Les application de type stencils ayant des particularités que nous
-   discuterons section [[#sec:com-stencils]], il est intéressant d'évaluer les
-   outils déjà disponibles dans le support d'exécution /StarPU/ permettant de
-   traiter de telles applications ou dans le cas contraire, d'identifier quels
-   seraient les ajouts nécessaires.
+   stencils dans un support d'exécution. Nous étudierons en particulier
+   l'ordonnancement de tâches dans le support d'exécution /StarPU/, développé
+   dans l'équipe /STORM/ Inria Sud-ouest. Les application de type stencils ayant
+   des particularités que nous discuterons section [[#sec:com-stencils]], il est
+   intéressant d'évaluer si les outils déjà disponibles dans le support
+   d'exécution /StarPU/ permettant de traiter de telles applications ou dans le
+   cas contraire, d'identifier quels seraient les ajouts nécessaires.
 ** Architecture hétérogène
    Les machines de calculs sont souvent composées de dizaines de CPUs (/Central
    Processing Unit/) et un, deux voir trois cartes graphiques. On parle alors
    d'architecture hétérogène. Les GPUs (/Graphics Processing Unit/) sont les
-   unités de calcul des carte graphique. Ils sont généralement bien plus rapide
+   ouvriers des carte graphique. Ils sont généralement bien plus rapide
    que des CPUs pour certaines tâches comme le graphisme. Ils sont aussi
    beaucoup utilisés en calcul haute performance pour faire du calcul
    généraliste.
 
-   Comme illustré figure [[fig:memarch]] chaque carte graphique dispose de sa propre
-   mémoire. Celle-ci est cependant plus limitée en volume que la mémoire
-   principale, soit quelques Go pour une carte graphique contre plusieurs
-   dizaines de Go pour la mémoire principale. De plus, les unités de calcul
-   d'une carte graphique ne peuvent pas directement avoir accès à la mémoire
-   principale. Lorsque l'on souhaite accéder à une donnée, il faut la charger
-   depuis la mémoire principale vers la mémoire de la carte graphique. La
-   latence étant plus élevée qu'un accès par un CPU.
+   Comme illustré figure [[fig:memarch]], chaque carte graphique dispose de sa
+   propre mémoire. Celle-ci est cependant plus limitée en volume que la mémoire
+   principale, soit quelques gigaoctets pour une carte graphique contre
+   plusieurs dizaines de gigaoctet pour la mémoire principale. De plus, les
+   ouvriers d'une carte graphique ne peuvent pas directement avoir accès à la
+   mémoire principale. Lorsque l'on souhaite accéder à une donnée, il faut la
+   charger depuis la mémoire principale vers la mémoire de la carte graphique.
+   La latence étant plus élevée qu'un accès par un CPU.
 
 #+NAME: fig:memarch
 #+CAPTION: Topologie mémoire d'une machine avec deux cartes graphiques.
@@ -128,9 +127,10 @@
 [[file:img/memarch.png]]
 
    Cette latence étant un facteur temporel limitant important, il convient de
-   réguler aux mieux les transferts vers les mémoires des GPUs. Pour cela, nous
+   réguler au mieux les transferts vers les mémoires des GPUs. Pour cela, nous
    pouvons essayer de :
-   - limiter le volume de données en réduisant les transferts au strict minimum
+   - limiter l'occupation du bus mémoire en réduisant les transferts au strict
+     minimum
    - limiter le temps passé à attendre qu'une donnée arrive en mémoire en
    faisant parallèlement des transferts et des calculs. On parle alors de
    recouvrement des transferts mémoires.
@@ -139,11 +139,11 @@
 
     Un support d'exécution est un composant qui vient se placer entre le système
     d'exploitation et l'application comme illustré figure [[fig:runtime]]. Son rôle
-    est d'ordonnancer finement les processus parmi les différentes unités de
-    calcul. Pour ce faire, il doit demander au système d'exploitation de laisser
-    le support d'exécution se charger de l'ordonnancement des processus. Il peut
-    aussi le rôle d'interface avec le protocole de communication MPI et les
-    accélérateurs GPU.
+    est d'ordonnancer finement les processus parmi les différents ouvriers. Pour
+    ce faire, il doit demander au système d'exploitation de laisser le support
+    d'exécution se charger de l'ordonnancement des processus. Il peut aussi le
+    rôle d'interface avec le protocole de communication MPI et les accélérateurs
+    GPU.
 
 #+NAME: fig:runtime
 #+CAPTION: Hiérarchie logicielle et support d'exécution.
@@ -152,8 +152,8 @@
 
     L'utilisateur doit construire un ensemble de tâches pour résoudre un
     problème, et soumettre toutes ces tâches au support d'exécution. Il peut
-    ainsi décider de la répartition des tâches de calcul sur les unités de
-    calcul à disposition. Pour prendre ces décision, il utilise des politiques
+    ainsi décider de la répartition des tâches de calcul sur les ouvriers à
+    disposition. Pour prendre ces décision, il utilise des politiques
     d'ordonnancement ou ordonnanceurs. Nous détaillons quelques exemples section
     [[#sec:detail-sched]].
 ** Applications stencils
@@ -172,7 +172,7 @@
     la réutilisation des données.
 
 # grille avec arrow pour representer les dept
- # - decoupage par blocs / taches, schema dep taches precedentes
+# - decoupage par blocs / taches, schema dep taches precedentes
 
 *** Économiser de la bande passante
 :PROPERTIES:
@@ -202,9 +202,12 @@
     figure [[fig:local-iter]].
 
 #+NAME: fig:local-iter
-#+CAPTION: Localité
+#+CAPTION: Exemple d'évolution d'un morceau de domaine pour un stencil 1D.
+#+CAPTION: Les chiffres représentent le numéro d'itération. On progresse en
+#+CAPTION: diagonale sur un petit morceau du domaine, plutôt que de traiter
+#+CAPTION: une itération complète d'un seul coup.
 #+ATTR_LATEX: :width 0.5\linewidth
-[[file:img/local-iter.png]]
+[[file:img/local-iter.pdf]]
 
 ** Répartition de charge
 
@@ -225,7 +228,7 @@
     Dans le domaine du calcul haute performance, le paradigme de programmation
     parallèle en tâches est très utilisé. Cependant, pour des machines ayant une
     architecture hétérogène, il peut devenir très complexe de trouver la
-    meilleur répartition des tâches sur les différentes unités de calcul. Pour
+    meilleur répartition des tâches sur les différents ouvriers. Pour
     pallier à ce problème, les supports d'exécution sont une solution. Ils
     essayent alors de prendre les décisions d'ordonnancement appropriées.
 
@@ -240,10 +243,9 @@
     performance. Cependant, la répartition des calculs est en général fait à la
     main. Des travaux ont aussi portés sur des algorithmes caches oblivieux ou
     /oblivious/ adaptés aux stencils cite:frigo-co-stencil. Ceux-ci tentent de
-    minimiser le nombre de défauts de cache (TODO: définir cette notion) sans
-    connaître la taille du cache. Pour cela, on maximise la réutilisation des
-    données . Cela nécessite aussi une charge de travail supplémentaire pour
-    l'utilisateur.
+    profiter du cache sans connaître la taille du cache. Pour cela, on favorise
+    la réutilisation des données. Cela nécessite aussi une charge de travail
+    supplémentaire pour l'utilisateur.
 
     De précédents travaux dans l'équipe /STORM/ portant sur des applications
     d'algèbre linéaire dense, creuse et compressée ont montré que le support
@@ -272,17 +274,17 @@
    Pour comprendre les performances obtenues avec /StarPU/, nous avons besoin
    d'observer la localité en espace et en temps des données. Ceci permettant de
    réduire le volume des transferts mémoires. Nous avons écrit des outils de
-   visualisation adaptés.
+   visualisation adaptés détaillés section [[#sec:outil-visu]].
 
-   Enfin, nous avons écrit un ordonnanceur simple adapté aux applications de
-   type stencil.
+   Enfin, nous avons assemblé un ordonnanceur simple adapté aux applications de
+   type stencil détaillé section [[#sec:mod-heft]].
 ** Ordonnanceurs : recouvrir les transferts mémoires et localité des données
    :PROPERTIES:
    :CUSTOM_ID: sec:detail-sched
    :END:
    Nous allons décrire dans cette section quelques ordonnanceurs du support
    d'exécution /StarPU/. C'est généralement l'application qui décide du type
-   d'ordonnnanceur à utiliser.
+   ordonnanceurs à utiliser.
 *** /Eager/ (=eager= et =prio=)
     L'ordonnanceur =eager= utilise une seule liste centralisée pour tous les
     ouvriers. Il distribue les tâches aux ouvriers suivant un ordonnancement
@@ -291,8 +293,8 @@
     assigner aux tâches. Elle ordonnance les tâches à priorité élevée en
     premier.
 
-    Cette ordonnanceur ne travail pas du tout sur la localité des données.
-    Cependant, en utilisant cette ordonnanceur, l'application peut feindre de la
+    Cet ordonnanceur ne travail pas du tout sur la localité des données.
+    Cependant, en utilisant cet ordonnanceur, l'application peut feindre de la
     localité des données. Pour cela nous attribuons une priorité croissante avec
     le numéro d'itération. Nous espérons ainsi que l'ordonnanceur ait tendance à
     faire évoluer des groupes de cellules proches comme illustré sur la figure
@@ -306,9 +308,10 @@
   transfert des données de la tâche comme illustrée figure \ref{fig:dmda}. Cela
   réduit les transferts entre mémoire GPU et mémoire principale.
 
-  =dmdar= est une variante de =dmda= qui trie les files des unités de calcul par
-  quantité de données déjà disponibles dans la mémoire de l'ouvrier. Cela permet
-  de maximiser le recouvrement des transferts par du calcul.
+  =dmdar= est une variante de =dmda=. Chaque ouvrier va sélectionner en premier,
+  dans sa file, les tâches ayant le plus de données déjà disponibles dans sa
+  mémoire. Cela permet de maximiser le recouvrement des transferts par du
+  calcul.
 #+BEGIN_LATEX
 \begin{figure}
 \centering
@@ -338,7 +341,7 @@ Ordonnancement d'une tâche pour l'ordonnanceur \texttt{dmda}.}
 *** /Locality Work Stealing/ (=lws=)
     L'ordonnanceur =lws= distribue les tâches aux différents ouvriers en
     fonction de la charge (durée de la tâche) et de la localité des données.
-    Un ouvrier pourra faire du vol travail s'il se retrouve inactif. Il pourra
+    Un ouvrier pourra faire du vol de travail s'il se retrouve inactif. Il pourra
     alors aller prendre une tâche d'un ouvrier voisin déjà bien chargé.
     L'ordonnanceur =lws= est illustré figure [[fig:sched_ws]].
 
@@ -353,6 +356,10 @@ Ordonnancement d'une tâche pour l'ordonnanceur \texttt{dmda}.}
 # - eager, mais regarde combien les tâches sont accélérées pour décider # -
 # - entre CPU et GPU
 *** /Modular-heft/
+    :PROPERTIES:
+    :CUSTOM_ID: sec:mod-heft
+    :END:
+
     Cet ordonnanceur est illustré figure [[fig:sched_mod_heft]]. Sa particuliarité
     est qu'il s'agit d'un ordonnanceur modulaire, construit par assemblage de
     composants. Ainsi, il est aisé de construire un nouveau ordonnanceur en
@@ -362,14 +369,18 @@ Ordonnancement d'une tâche pour l'ordonnanceur \texttt{dmda}.}
     qu'il reste des tâches dans sa file, on récupère une tâche prête dans la
     liste et on l'exécute. Une tâche prête est une tâche dont les données se
     trouvent déjà en mémoire pour un noeud donné. Le recouvrement des transferts
-    mémoires est donc cruciaux ici.
+    mémoires est donc crucial ici.
 
-    Lorsque la liste est vide, on va aller
-    notifier le composant racine. Celui-ici va alors essayer de remplir la liste
-    de l'ouvrier qui a fait la demande avec des tâches dont les données lui sont
-    déjà accessibles.
+    Lorsque la liste est vide, on va aller notifier le composant racine.
+    Celui-ci va alors essayer de pousser des tâches dont les données se
+    trouvent déjà dans la mémoire de cet ouvrier.
 
-    Le composant /mct/ (/Manufacturing Critical Time/) ...
+    Le composant /mct/ (/Manufacturing Critical Time/) récupère les tâches
+    poussées par la racine, et va estimer une date de terminaison de la tâche
+    pour chacun de ses composants fils (les composants ouvriers). Cette date
+    dépend de la durée de la tâche, de la vitesse de l'ouvrier et de la durée
+    des éventuels transferts. Il sélectionne la date la plus proche dans le
+    future et envoie la tâche à l'ouvrier correspondant.
 #+NAME: fig:sched_mod_heft
 #+CAPTION: Ordonnanceur =modular-heft=.
 #+ATTR_LATEX: :width 0.7\linewidth
@@ -378,26 +389,34 @@ Ordonnancement d'une tâche pour l'ordonnanceur \texttt{dmda}.}
     Pour évaluer les ordonnanceurs du support d'exécution /StarPU/, nous avons
     besoin d'une méthode de référence. Pour cela, nous utilisons le résultat de
     précédentes recherches portant sur un algorithme cache oblivieux adaptés au
-    stencil cite:frigo-co-stencil.
+    stencil cite:frigo-co-stencil. Nous avons implémenté cet algorithme tel
+    qu'il y est décrit.
 
     Cet algorithme décrit un ordre dans lequel faire les mises à jour des
     cellules qui favorise la réutilisation des données. Nous n'utilisons pas
     d'ordonnanceurs et laissons l'utilisateur décider quelle tâche sera exécutée
     sur quel ouvrier et dans quel ordre. Nous soumettons les tâches dans l'ordre
     dicté par l'algorithme cache oblivieux afin de limiter le volume de données
-    transférées. À priori, il devrait s'agit de la méthode idéale lorsque le
+    transférées. Il devrait s'agir d'une méthode proche de l'idéale lorsque le
     problème étudié est trop grand pour rentrer en mémoire GPU.
 
-    L'algorithme étant adapté pour une exécution séquentiel, il a fallu
-    l'adapter pour une exécution parallèle. Pour cela, nous découpons le
+    L'algorithme ayant été pensé pour une exécution en séquentiel, il a fallu
+    l'adapter pour une exécution en parallèle. Pour cela, nous découpons le
     problème en autant de sous-domaines que nous disposons de cartes graphiques.
     Nous appliquons un l'algorithme cache oblivieux de manière locale pour
     chaque sous-domaine.
 
+    *???* est-ce que j'explique ici l'ajout de sémaphores pour respecter les
+    dépendances ?
+
 ** Outils de visualisation
+   :PROPERTIES:
+   :CUSTOM_ID: sec:outil-visu
+   :END:
+
    Maintenant que nous avons une méthode de référence, il faut pouvoir
    comprendre ce que les ordonnanceurs font de bien ou mal. L'outil /StarPU/
-   dispose déjà d'outil d'analyse de traces qui permettent d'observer si un
+   dispose déjà d'outils d'analyse de traces qui permettent d'observer si un
    ouvrier est actif ainsi que les transferts mémoires, et cela pour chaque
    instant de l'exécution. Cela ne nous suffit pas, en effet, nous voulons
    observer la localité des données.
@@ -425,18 +444,18 @@ Exemple de diagramme d'exécution des tâches : domaine en fonction du temps.}
     morceau du domaine et à quelle itération du stencil. En noir sont aussi
     affichées des courbes isochrones. Elle permettent d'intégrer une dimension
     temporelle dans le diagramme. Tout ce qui se trouve entre deux courbes
-    isochrones à la verticale s'est déroulé durant le même laps de
-    temps.
+    isochrones à la verticale s'est déroulé durant le même laps de temps. Sur
+    l'exemple de la figure \ref{fig:example-iter-xpm}, la durée entre deux
+    courbes isochrones est de 100ms.
 #+BEGIN_LATEX
 \begin{figure}
 \centering
-\captionsetup{justification=centering}
 \hspace*{\fill}
 \subfloat[Exécution avec deux GPUs.]
-  {\includegraphics[width=0.15\linewidth]{img/example-iter.png}}
+  {\includegraphics[width=0.55\linewidth]{img/example-iter.pdf}}
 \hspace*{\fill}
 \subfloat[Légende.]
-  {\includegraphics[width=0.6\linewidth]{img/xpm-legend-iter.png}}
+  {\includegraphics[width=0.45\linewidth]{img/xpm-legend-iter.png}}
 \hspace*{\fill}
 \caption{\label{fig:example-iter-xpm}
 Exemple de diagramme d'exécution des tâches : domaine en fonction des itérations.}
@@ -455,7 +474,7 @@ Exemple de diagramme d'exécution des tâches : domaine en fonction des itérati
 *** Expérimentation simulées à l'aide de /SimGrid/
     /SimGrid/ est un composant logiciel qui permet de simuler des expériences
     dans le domaine du calcul haute performance ou dans le /cloud computing/ ou
-    informatique en nuage. Tout les composants d'une expérience peuvent être
+    informatique en nuage. Tous les composants d'une expérience peuvent être
     simulés : architecture de la machine ou du réseau de machines, temps de
     calculs, temps de transferts mémoires...
 
@@ -465,8 +484,7 @@ Exemple de diagramme d'exécution des tâches : domaine en fonction des itérati
     certaines heuristiques.
 
     La validation de ces expériences sur de vraies machines, en utilisant un
-    stencil moins factice que celui utilisé durant le stage, ne sera pas faite
-    durant le stage.
+    stencil moins factice que celui utilisé, ne sera pas faite durant le stage.
 *** Le programme de test utilisé : un stencil 1D
     + stencil jouet faux stencil fait pas de calcul, attend un temps predettermine
     + on simule des blocs en disant ce truc la fait 3mo

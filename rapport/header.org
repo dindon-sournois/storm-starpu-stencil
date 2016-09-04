@@ -15,7 +15,7 @@
 
 #+LATEX_HEADER: \usepackage[backend=bibtex]{biblatex}
 #+LATEX_HEADER: \usepackage{csquotes}
-#+LATEX_HEADER: \addbibresource{rapport.bib}
+#+LATEX_HEADER: \addbibresource{biblio.bib}
 
 #+LATEX_HEADER: \usepackage{subfig}
 #+LATEX_HEADER: \captionsetup[subfloat]{%
