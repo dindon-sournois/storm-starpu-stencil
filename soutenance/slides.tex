@@ -1,0 +1,401 @@
+\documentclass[9pt]{beamer}
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage{helvet}
+\usepackage{fixltx2e}
+\usepackage{graphicx}
+\usepackage{grffile}
+\usepackage{longtable}
+\usepackage{wrapfig}
+\usepackage{rotating}
+\usepackage[normalem]{ulem}
+\usepackage{amsmath}
+\usepackage{textcomp}
+\usepackage{amssymb}
+\usepackage{capt-of}
+\usepackage{hyperref}
+\usepackage{subfig}
+\captionsetup[subfloat]{%
+font=footnotesize,
+indention=10pt}
+
+\usetheme{inria}
+
+\author{Loris Lucido}
+\date{?? septembre 2016}
+\title{Ordonnancement d'applications de type stencil sur cluster hybrides CPU/GPU}
+\subtitle{LaBRI - INRIA Bordeaux Sud-Ouest - Équipe \textsc{Storm}}
+
+\AtBeginSection[]{
+  \begin{frame}[plain]
+    \partpage
+  \end{frame}
+}
+
+\begin{document}
+
+\begin{frame}[plain]
+  \titlepage
+\end{frame}
+
+% \begin{frame}{\textcolor{inriaGrey}{Sommaire}}
+%   \tableofcontents
+% \end{frame}
+
+\section{Introduction au sujet}
+
+\begin{frame}{Domaine du Calcul Haute Performance}
+  \begin{itemize}
+  \item Résoudre un problème de plus en plus rapidement ou de taille de
+    plus en plus grande
+    \vfill
+  \item Application de simulation en climatologie, aérospatiale, dynamique
+    moléculaire, etc.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}{Présentation de l'équipe \textsc{STORM}}
+  \vfill
+  \textit{STatic Optimizations Runtime Methods}, trois axes de recherche :
+  \vfill
+  \begin{itemize}
+  \item Langage de haut niveau spécifique à un domaine (\textit{e.g. QIRAL})
+  \vfill
+  \item Outils d'analyse de performance et d'aide à l'optimisation (\textit{e.g. MAQAO})
+  \vfill
+  \item Support d'exécution pour des calculateurs hétérogènes (\textit{StarPU})
+  \end{itemize}
+  \vfill
+\end{frame}
+
+\begin{frame}{Architecture hétérogène}
+  \vfill
+  \begin{itemize}
+  \item<1-> Des dizaines de cœurs par processeurs
+    \vfill
+  \item<2-> Plusieurs processeurs par machine
+    \vfill
+  \item<3-> Plusieurs cartes graphiques dédiées au calcul
+  %   \vfill
+  % \item<4-> Plusieurs machines reliées en réseau\ldots
+  \end{itemize}
+  \vfill
+\end{frame}
+\begin{frame}{Architecture hétérogène}
+  \begin{figure}
+    \centering
+    \includegraphics[width=0.5\linewidth]{img/memarch.png}
+    \caption{Topologie mémoire d'une machine avec deux cartes graphiques.}
+  \end{figure}
+  \vfill
+  Carte graphique dédiée au calcul :
+  \vfill
+  \begin{itemize}
+  \item<2-> Mémoire dédiée (environ 10 fois inférieur à la mémoire principale)
+    \vfill
+  \item<3-> Pas d'accès direct à la mémoire principale : il faut copier les
+    données dans la mémoire de la carte
+  \end{itemize}
+\end{frame}
+
+\begin{frame}{Le support d'exécution (ou \textit{Runtime}) StarPU}
+  \vfill
+  \begin{itemize}
+  \item Composant logiciel qui vient se placer entre le système d'exploitation
+    et l'application de Calcul Haute Performance
+    \vfill
+  \item Permet à des applications d'exploiter une architecture de manière portable et générique
+    en utilisant le paradigme de programmation parallèle en tâches
+    \vfill
+  \item Dispose de ses propres stratégies d'ordonnancement (ordonnanceur) pour
+    choisir sur quelle unité de calcul exécuter un processus
+  \end{itemize}
+  \vfill
+\end{frame}
+
+\section{Contexte}
+
+\begin{frame}{\textcolor{inriaGrey}{Programmation parallèle en tâches}}
+  \vfill
+  \begin{itemize}
+    \vfill
+  \item Découpage du problème en sous-ensembles : tâches \vfill
+  \item Exécution parallèle des tâches sur différentes unités de calcul \vfill
+  \item Dépendances de données entre les tâches \vfill
+    \begin{figure}
+      \centering
+      \includegraphics[width=0.5\linewidth]{img/task-deps.pdf}
+      \caption{Graphe de dépendances de tâches.}
+    \end{figure}
+    \vfill
+  \end{itemize}
+\end{frame}
+
+\begin{frame}{\textcolor{inriaGrey}{Ordonnancement des tâches par le support d'exécution}}
+  \begin{itemize}
+  \item Ordonnancement du graphe de tâches sur les différents unités de calcul
+    ou ouvriers : cœurs CPU (processeur) ou GPU (carte graphique) \vfill
+  \item Il faut choisir le «meilleur ouvrier» pour une tâche donnée \vfill
+  \item Il faut communiquer les résultats des calculs entre les ouvriers :
+    transferts mémoires (entre cartes graphiques et mémoire principale) \vfill
+  \end{itemize}
+\end{frame}
+
+\begin{frame}{\textcolor{inriaGrey}{Applications stencils}}
+  \vfill
+  Qu'est-ce qu'une application stencil ?
+  \vfill
+  \begin{itemize}
+    \item Stencil : motif ou pochoir que l'on applique par répétition sur
+      l'ensemble du domaine étudié
+  \end{itemize}
+  \vfill
+  \begin{figure}
+    \centering
+    \includegraphics[width=0.6\linewidth]{img/5-points-stencil.pdf}
+    \caption{Exemple de stencil 5-points en 2D et 1D.}
+  \end{figure}
+  \vfill
+  \begin{itemize}
+  \item<2-> Mise à jour d'une cellule en fonction du voisinage, schéma appliqué
+    «simultanément» sur un ensemble de cellules
+  \vfill
+  \item<3-> Dimension temporelle construit avec des \textit{itérations}
+  \vfill
+  \item<4-> Le ratio nombre d'accès mémoires par mise à jour est très élevé
+  \end{itemize}
+  \vfill
+\end{frame}
+
+\begin{frame}{\textcolor{inriaGrey}{Objectifs généraux du stage}}
+  \vfill
+  \begin{itemize}
+  \item<1-> Travail sur le recouvrement des transferts mémoires par du calcul : il ne faut jamais
+    avoir à attendre la fin d'un transfert \vfill
+  \item<2-> Travail sur la localité (spatiale et temporelle) des données : faire
+    de la réutilisation de données \vfill
+  \item<3-> Problématique du stage : \newline Est-ce que les stratégies
+    d'ordonnancement génériques du support d'exécution \textit{StarPU} sont
+    adaptées à des applications stencil, où la localité des données est
+    cruciale ?
+  \end{itemize}
+  \vfill
+\end{frame}
+
+\begin{frame}{\textcolor{inriaGrey}{Résumé de la contribution}}
+  \vfill
+  \begin{itemize}
+  \item<1-> Outils de visualisation pour observer la localité des données
+    \vfill
+  \item<2-> Construction d'un graphe de tâches optimisé pour un stencil en guise
+    de méthode de référence pour la partie évaluation \vfill
+  \item<3-> Évaluation des ordonnanceurs de \textit{StarPU} pour des applications
+    stencils :
+    \vfill
+    \begin{itemize}
+    \item<4-> temps de calcul d'une tâche deux fois inférieur au temps de
+      transfert des données associées \vfill
+    \item<5-> taille de problème plus grand que la mémoire disponible sur les
+      cartes graphiques \vfill
+    \item<6-> problème de déséquilibre de charge
+    \end{itemize}
+    \vfill
+  \item<7-> Assemblage d'un ordonnanceur qui exploite l'information de localité
+    des données
+  \end{itemize}
+  \vfill
+\end{frame}
+
+\section{Méthode de référence pour l'évaluation}
+
+\begin{frame}{\textcolor{inriaGrey}{Le cas à éviter : aucune localité des données}}
+  \begin{figure}
+    \centering
+    \hspace*{\fill}
+    \includegraphics[width=0.45\linewidth]{img/worst-nolimit.png}
+    \hspace*{\fill}
+    \includegraphics[width=0.55\linewidth]{img/xpm-legend-gpu1.pdf}
+    \hspace*{\fill}
+    \newline \vfill
+    \includegraphics[width=1\linewidth]{img/worst-limit.png}<2->
+    \vfill
+    \caption{Diagramme en temps d'une exécution avec soumission de tâches naïve
+      sur un GPU.}
+  \end{figure}
+\end{frame}
+
+\begin{frame}{\textcolor{inriaGrey}{Définition cache oublieux (\textit{oblivious})}}
+  \vfill
+  \begin{itemize}
+  \item<2-> Limite les chargements mémoires hors cache (\textit{cache misses})
+  \vfill
+  \item<3-> Favorise la réutilisation des données
+  \vfill
+  \item<4-> Découple l'optimisation du paramètre «taille du cache»
+  \end{itemize}
+  \vfill
+\end{frame}
+
+\begin{frame}{\textcolor{inriaGrey}{Soumission de tâches cache oublieux}}
+  \vfill
+  Une soumission cache oublieuse de tâches au support d'exécution permet de :
+  \vfill
+  \begin{itemize}
+  \item<2-> Favoriser la localité des données \vfill
+  \item<3-> Limiter les transferts mémoires entre cartes graphiques et mémoire
+    principale
+  \end{itemize}
+  \vfill
+  \begin{figure}
+    \centering
+    \includegraphics[width=1\linewidth]{img/co-gpu1.png}
+    \caption{Diagramme en temps d'une exécution avec soumission de tâches cache
+      oublieux sur un GPU.}
+  \end{figure}
+  \begin{figure}
+    \centering
+    \includegraphics[width=0.5\linewidth]{img/xpm-legend-gpu1-nt.pdf}
+  \end{figure}
+\end{frame}
+
+\begin{frame}{\textcolor{inriaGrey}{Version parallèle - respect des dépendances}}
+  \vfill
+  \begin{figure}
+    \centering
+    \includegraphics<1->[width=1\linewidth]{img/co-gpu2-nomirror.pdf}
+  \end{figure}
+  \begin{figure}
+    \centering
+    \includegraphics<2->[width=0.8\linewidth]{img/co-gpu2-mirror.png}
+    \caption{Diagramme en temps d'une exécution avec soumission parallèle de
+      tâches cache oublieux sur deux GPU.}
+  \end{figure}
+  \begin{figure}
+    \centering
+    \includegraphics[width=0.6\linewidth]{img/xpm-legend-gpu2.pdf}
+  \end{figure}
+  \vfill
+\end{frame}
+
+\section{Ordonnanceur \texttt{dmdar} - localité des données}
+
+\begin{frame}{\textcolor{inriaGrey}{Ordonnancement d'une tâche pour l'ordonnanceur \texttt{dmdar}}}
+  \begin{figure}
+    \centering
+    \includegraphics[width=0.7\linewidth]{img/sched_dmdar.pdf}
+  \end{figure}
+\end{frame}
+
+\begin{frame}{\textcolor{inriaGrey}{Ordonnancement d'une tâche pour l'ordonnanceur \texttt{dmda}}}
+  \begin{figure}
+    \centering
+    \includegraphics[width=0.7\linewidth]{img/sched_dmda.pdf}
+  \end{figure}
+\end{frame}
+
+\begin{frame}{\textcolor{inriaGrey}{Choix du meilleur ouvrier}}
+\begin{figure}
+\hspace*{\fill}
+\subfloat[État initial des files de tâches.]
+  {\includegraphics[width=0.3\linewidth]{img/sched_dmda_1.pdf}}
+\hspace*{\fill}
+\subfloat[Temps de calcul.]
+  {\includegraphics[width=0.3\linewidth]{img/sched_dmda_2.pdf}}
+\hspace*{\fill}
+\newline
+\hspace*{\fill}
+\subfloat[Temps de transfert.]
+  {\includegraphics[width=0.3\linewidth]{img/sched_dmda_5.pdf}}
+\hspace*{\fill}
+\subfloat[Choix de l'ouvrier idéal.]
+  {\includegraphics[width=0.3\linewidth]{img/sched_dmda_6.pdf}}
+\hspace*{\fill}
+\caption{Recherche d'une date de terminaison minimale.}
+\end{figure}
+\end{frame}
+
+\begin{frame}{\textcolor{inriaGrey}{Comparaison avec la méthode de référence}}
+  \begin{figure}
+    \centering
+    \includegraphics[width=0.7\linewidth]{exp/perf_gpu2_limit200.pdf}
+    \caption{Évolution du temps d'exécution en fonction de la taille du problème
+      - 2 GPU, limite mémoire fixée à 200MB par GPU.}
+  \end{figure}
+  \vfill
+  \begin{itemize}
+  \item<2-> Souligne l'importance du recouvrement des transferts mémoires
+  \vfill
+  \item<3-> Performances encore trop éloigné de l'idéal (1.5x plus lent)
+  \end{itemize}
+  \vfill
+\end{frame}
+
+\begin{frame}
+  \begin{figure}
+    \centering
+    \hspace*{\fill}
+    \includegraphics[width=0.22\linewidth]{img/dmdar-iter-gpu2.pdf}
+    \hspace*{\fill}
+    \includegraphics[width=0.4\linewidth]{img/xpm-legend-iter-gpu2.pdf}
+    \hspace*{\fill}
+    \caption{%
+      \label{fig:dmdar-iter-gpu2}%
+      Diagramme en itérations d'une exécution de \texttt{dmdar}. 2 GPU, taille
+      du problème 1800MB, limite mémoire fixée à 200MB par GPU.}
+  \end{figure}
+\end{frame}
+
+\begin{frame}
+  \begin{figure}
+    \centering
+    \vfill
+    \includegraphics[width=1\linewidth]{img/dmdar-gpu2.pdf}
+    \newline
+    \vfill
+    \includegraphics[width=0.6\linewidth]{img/xpm-legend-gpu2.pdf}
+    \vfill
+    \caption{%
+      \label{fig:dmdar-gpu2}%
+      Diagramme en temps - Échantillon d'exécution de \texttt{dmdar}. 2 GPU,
+      taille du problème 1800MB, limite mémoire fixée à 200MB par GPU.}
+  \end{figure}
+  \vfill
+\end{frame}
+
+\section{Conclusion}
+
+\begin{frame}{\textcolor{inriaGrey}{Améliorations}}
+  \vfill
+  Bilan :
+  \begin{itemize}
+  \item Le support d'exécution \textit{StarPU} apporte des performances
+    satisfaisantes, peut-être encore trop éloignées de l'idéal mais de manière
+    générique et portable \vfill
+  % \item Répartition des tâches par \texttt{dmdar} encore perfectible
+  \end{itemize}
+  \vfill
+  \begin{itemize}
+  \item Visualisation pour stencils à dimension arbitraire (2D, 3D, etc.)
+    \vfill
+  \item Test d'un vrai stencil (e.g. application de simulation nucléaire)
+  \end{itemize}
+  \vfill
+\end{frame}
+
+\begin{frame}{\textcolor{inriaGrey}{Perspectives}}
+  \vfill
+  \begin{itemize}
+  \item \textit{Out of core} : plus de place en mémoire principale
+    \begin{itemize}
+    \item Rapatriement en mémoire du disque dur
+    \end{itemize}
+    \vfill
+  \item Programmation distribuée en réseau (\textit{Message Passing Interface})
+  \end{itemize}
+  \vfill
+\end{frame}
+
+\end{document}
+
+% programme de test : env 600l de code
+% outils de visualisation : env 600l de code

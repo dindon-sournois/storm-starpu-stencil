@@ -1,5 +1,5 @@
-#+LaTeX_CLASS: article
-#+LaTeX_CLASS_OPTIONS: [12pt]
+#+LATEX_CLASS: article
+#+LATEX_CLASS_OPTIONS: [12pt]
 #+OPTIONS: toc:nil
 #+LANGUAGE: fr
 #+LATEX_HEADER: \usepackage[francais]{babel}
@@ -13,17 +13,29 @@
 #+LATEX_HEADER: \addto\captionsfrench{\renewcommand{\figurename}{Figure}}
 #+LATEX_HEADER: \addto\captionsfrench{\renewcommand{\tablename}{Table}}
 
-#+LATEX_HEADER: \usepackage[backend=bibtex]{biblatex}
+#+LATEX_HEADER: \usepackage{chngcntr}
+#+LATEX_HEADER: \counterwithin{figure}{section}
+
+#+LATEX_HEADER: \usepackage[backend=biber]{biblatex}
 #+LATEX_HEADER: \usepackage{csquotes}
-#+LATEX_HEADER: \addbibresource{biblio.bib}
+#+LATEX_HEADER: \addbibresource{rapport.bib}
 
 #+LATEX_HEADER: \usepackage{subfig}
 #+LATEX_HEADER: \captionsetup[subfloat]{%
 #+LATEX_HEADER:  font=footnotesize,
 #+LATEX_HEADER:  indention=10pt}
-# #+LaTeX_HEADER: \usepackage{minted}
-# #+LaTeX_HEADER: \usemintedstyle{emacs}
-# #+LaTeX_HEADER: \newminted{common-lisp}{fontsize=\footnotesize}
+
+# #+LATEX_HEADER: \usepackage{minted}
+# #+LATEX_HEADER: \usemintedstyle{emacs}
+# #+LATEX_HEADER: \newminted{common-lisp}{fontsize=\footnotesize}
+
+#+LATEX_HEADER: \newcommand*\justify{%
+#+LATEX_HEADER:   \fontdimen2\font=0.4em% interword space
+#+LATEX_HEADER:   \fontdimen3\font=0.2em% interword stretch
+#+LATEX_HEADER:   \fontdimen4\font=0.1em% interword shrink
+#+LATEX_HEADER:   \fontdimen7\font=0.1em% extra space
+#+LATEX_HEADER:   \hyphenchar\font=`\-% allowing hyphenation
+#+LATEX_HEADER: }
 
 #+LATEX_HEADER: \newcommand{\Title}{Ordonnancement d'applications de type stencil sur cluster hybrides CPU/GPU}
 #+LATEX_HEADER: \newcommand{\DueDate}{9\ septembre\ 2016}
@@ -80,5 +92,5 @@
 \end{titlepage}
 #+END_LATEX
 
-#+TOC: headlines 3
+#+TOC: headlines 2
 #+LATEX: \clearpage

@@ -80,9 +80,11 @@ function test_cache_oblivious() {
 function test_load() {
     cd "build-simgrid-no-fxt" || exit
 
-    for limit_mem in 0; do
+    # for limit_mem in 0; do
+    for limit_mem in 200; do
         for nbgpus in 2; do
-            for load in dyn-unbalanced-load unbalanced-load regular; do
+            # for load in dyn-unbalanced-load unbalanced-load regular; do
+            for load in dyn-unbalanced-load; do
                 for sched in dmdar; do
                     filename=../output/load_"$nbgpus"_"$sched"_"$limit_mem"_"$load".txt
                     echo "# PROBLEM_SIZE (MB) COMPLETION_TIME (ms)" > $filename
@@ -112,7 +114,7 @@ function test_load() {
 }
 
 # test_cache_oblivious
-# test_load
+test_load
 ./locality_cache_oblivious.gp
 unset STARPU_HOSTNAME
 exit 0

@@ -1,0 +1,100 @@
+on utilise des supercalculateurs pour résoudre des prob de + en +...
+------
+
+langage de haut niveau... exprimer du parallélisme de manière indépendante de
+l'architecture et donc portable.
+------
+
+qu'est qu'une architecture hétérogène ? il est courant sur des machines de
+calcul d'avoir des dizaines de coeur physique par processeurs
+------
+
+ici un exenple d'architecture hetero qui est typiquement le genre d'achitecture
+utilisé durant le stage.
+
+deja pq on utilise des cartes graphiques ? plus rapide que les CPU pour certain
+calcul
+
+sur le schéma on peut voir que les carte graphique possède une mémoire dédiée en
+quantité limitée
+
+elle n'ont pas accès direct à la RAM, transfert des données de puis la RAM, en
+passant par le bus vers la mémoire de la carte graphique
+------
+
+dependance de données : on donne une première tâche, on indique que sa
+terminaison libère deux autres tâches pour pourront etre exécuter par la suite,
+et continue ainsi formant un graphe de taches
+------
+
+on donne alos le graphe de tache à dérouler au support d'execution
+
+il va choisir sur quelle unité de calcul ou ouvrier, exécuter chaque tâche
+
+nous expliqueront ce que signifie en detail «meilleur ouvrier»
+
+executer des taches sur differents ouvrier implique qu'il faille echanger les
+res...
+------
+
+stencil : classe d'algorithme utilisé en simulation de gaz ou propagation de la
+chaleur par ex.
+
+dimension temporelle : a chaque instant de la simulation correspond une
+iteration, passer d'une iteration à la suivante consiste à mettre à jour chaque
+élément du domaine
+------
+
+Pour limiter l'impact des transferts mémoires, on fait du recouvrement : on fait
+parallèlement du calcul et des transferts, l'objectif : ne pas avoir à attendre
+la terminaison d'un transfert
+
+localité : je reviendrai sur ce que cela veux dire
+------
+
+cache : mémoire à accès rapide en faible quantité
+
+on applicache ce principe cache oublieux pour des carte graphique, car les
+probleme qu'on etudie peuvent etre 10 ou meme 20 plus trop grand pour rentrer en
+memoire
+------
+
+ajout meth de ref : spécifique aux stencils, au niveau applicatif, pas dans le
+support d'execution
+
+Cet algorithme décrit un ordre dans lequel faire les mises à jour des cellules
+qui favorise la réutilisation des données
+
+un pixel = une mise à jour d'une certaine cellule pour une certaine itération
+
+Pour resoudre un probleme de GPU inactif lié aux dependances de taches, le GPU
+rouge effectue le meme algo cache oublieux mais en miroir, en commençant par la
+fin, comme ça les deux GPU travaillent a la meme vitesse
+
+Il devrait s’agir d’une méthode proche de l’idéal lorsque le problème étudié est
+trop grand pour rentrer en mémoire GPU.
+------
+
+Soumission séquentielle de tâches dans un ordre naturel pour l'application
+------
+
+ordonnancement : choix de l'ouvrier idéal
+date de terminaison pour chaque ouvrier, on prend la plus proche date dépend
+du temps de calcul de la tâche (ça suppose que c'est une donnée connu), temps
+de transfert, vitesse ouvrier (CPU/GPU)
+
+définir meilleur : date de terminaison la plus proche
+Recherche du temps de terminaison minimum
+Le CPU 3 semble être le meilleur candidat.
+------
+
+On limite la mémoire pour que le problème étudié ne rentre pas en mémoire
+------
+
+------
+
+concl: les performances sont satisfaisantes et cela de maniere generique, sans
+intervention dans l'application comme pour la soumission de tache cache
+oublieux, ce qui est ce qu'on souhaiter etudier
+
+mais encore trop eloigné de l'ideal, y'a des points à améliorer

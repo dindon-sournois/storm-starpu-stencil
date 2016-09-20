@@ -25,7 +25,7 @@
         <dc:format>image/svg+xml</dc:format>
         <dc:type
            rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
-        <dc:title></dc:title>
+        <dc:title />
       </cc:Work>
     </rdf:RDF>
   </metadata>
@@ -64,85 +64,71 @@
   <text
      xml:space="preserve"
      style="font-style:normal;font-weight:normal;font-size:9.09127045px;line-height:125%;font-family:sans-serif;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
-     x="2.1929348"
-     y="49.500256"
-     id="text4941"
-     sodipodi:linespacing="125%"
-     inkscape:export-xdpi="90"
-     inkscape:export-ydpi="90"><tspan
-       sodipodi:role="line"
-       id="tspan4943"
-       x="2.1929348"
-       y="49.500256"
-       style="font-size:2.27281761px">0ms</tspan></text>
-  <text
-     xml:space="preserve"
-     style="font-style:normal;font-weight:normal;font-size:9.09127045px;line-height:125%;font-family:sans-serif;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
-     x="11.12689"
-     y="49.499977"
+     x="8.2100744"
+     y="18.475668"
      id="text4941-7"
      sodipodi:linespacing="125%"
      inkscape:export-xdpi="90"
      inkscape:export-ydpi="90"><tspan
        sodipodi:role="line"
-       x="11.12689"
-       y="49.499977"
-       style="font-size:2.27281761px"
-       id="tspan4963">100</tspan></text>
+       x="8.2100744"
+       y="18.475668"
+       style="font-size:2.5px;fill:#ffffff"
+       id="tspan4963">100ms</tspan></text>
   <text
      xml:space="preserve"
      style="font-style:normal;font-weight:normal;font-size:9.09127045px;line-height:125%;font-family:sans-serif;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
      x="23.338888"
-     y="49.424236"
+     y="18.399927"
      id="text4941-7-9"
      sodipodi:linespacing="125%"
      inkscape:export-xdpi="90"
      inkscape:export-ydpi="90"><tspan
        sodipodi:role="line"
        x="23.338888"
-       y="49.424236"
-       style="font-size:2.27281761px"
+       y="18.399927"
+       style="font-size:2.5px;fill:#ffffff"
        id="tspan4963-3">200</tspan></text>
   <text
      xml:space="preserve"
      style="font-style:normal;font-weight:normal;font-size:9.09127045px;line-height:125%;font-family:sans-serif;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
-     x="36.409107"
-     y="49.386505"
+     x="37.116215"
+     y="18.362196"
      id="text4941-6"
      sodipodi:linespacing="125%"
      inkscape:export-xdpi="90"
      inkscape:export-ydpi="90"><tspan
        sodipodi:role="line"
        id="tspan4943-0"
-       x="36.409107"
-       y="49.386505"
-       style="font-size:2.27281761px">300</tspan></text>
+       x="37.116215"
+       y="18.362196"
+       style="font-size:2.5px;fill:#ffffff">300</tspan></text>
   <text
      xml:space="preserve"
      style="font-style:normal;font-weight:normal;font-size:9.09127045px;line-height:125%;font-family:sans-serif;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
-     x="50.72065"
-     y="49.386227"
+     x="50.985813"
+     y="18.361917"
      id="text4941-7-6"
      sodipodi:linespacing="125%"
      inkscape:export-xdpi="90"
      inkscape:export-ydpi="90"><tspan
        sodipodi:role="line"
-       x="50.72065"
-       y="49.386227"
-       style="font-size:2.27281761px"
+       x="50.985813"
+       y="18.361917"
+       style="font-size:2.5px;fill:#ffffff"
        id="tspan4963-2">400</tspan></text>
   <text
      xml:space="preserve"
      style="font-style:normal;font-weight:normal;font-size:9.09127045px;line-height:125%;font-family:sans-serif;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
      x="64.901917"
-     y="49.310486"
+     y="18.286177"
      id="text4941-7-9-6"
      sodipodi:linespacing="125%"
      inkscape:export-xdpi="90"
      inkscape:export-ydpi="90"><tspan
        sodipodi:role="line"
        x="64.901917"
-       y="49.310486"
-       style="font-size:2.27281761px"
+       y="18.286177"
+       style="font-size:2.5px;fill:#ffffff"
        id="tspan4963-3-1">500</tspan></text>
 </svg>
