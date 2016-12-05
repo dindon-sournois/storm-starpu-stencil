@@ -22,6 +22,10 @@ elle n'ont pas accès direct à la RAM, transfert des données de puis la RAM, e
 passant par le bus vers la mémoire de la carte graphique
 ------
 
+paradigme de plus en plus utilisé, graphe de tache = rep. abstraite, permet
+d'appliquer des methodes maths, le runtime connait le futur de l'execution (il
+suffit de regarder le graphe)
+
 dependance de données : on donne une première tâche, on indique que sa
 terminaison libère deux autres tâches pour pourront etre exécuter par la suite,
 et continue ainsi formant un graphe de taches
@@ -37,8 +41,8 @@ executer des taches sur differents ouvrier implique qu'il faille echanger les
 res...
 ------
 
-stencil : classe d'algorithme utilisé en simulation de gaz ou propagation de la
-chaleur par ex.
+stencil : classe d'algorithme utilisé pour tout ce qui est discrétisation de
+phenomeme physiques
 
 dimension temporelle : a chaque instant de la simulation correspond une
 iteration, passer d'une iteration à la suivante consiste à mettre à jour chaque
@@ -65,7 +69,12 @@ support d'execution
 Cet algorithme décrit un ordre dans lequel faire les mises à jour des cellules
 qui favorise la réutilisation des données
 
+On applique «betement» l'algorithme tel que decit dans la literature
+
 un pixel = une mise à jour d'une certaine cellule pour une certaine itération
+
+a cause des dep de taches, le gpu bleu demare plus tard, il attend que le gpu
+rouge traite les taches situé a la frontiere entre les deux gpu
 
 Pour resoudre un probleme de GPU inactif lié aux dependances de taches, le GPU
 rouge effectue le meme algo cache oublieux mais en miroir, en commençant par la
@@ -89,6 +98,7 @@ Le CPU 3 semble être le meilleur candidat.
 ------
 
 On limite la mémoire pour que le problème étudié ne rentre pas en mémoire
+ideal : 1 frontiere pour 2 gpu
 ------
 
 ------

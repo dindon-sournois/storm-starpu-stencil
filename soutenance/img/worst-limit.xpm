@@ -8,13 +8,13 @@ static char * XFACE[] = {
 
 /* <width> <height> <colors> <char on pixels> */
 "1362 300 9 1",
-". c #80808C", /* gray: background */
+". c #dddddd", /* gray: background */
 "0 c #006946", /* dark green: cpu task */
 "1 c #FF0000", /* red: gpu1 task */
 "2 c #0000FF", /* blue: gpu2 task */
 "3 c #00FF00", /* green gpu3 task */
-"u c #00FFFF", /* cyan: gpu -> cpu copy */
-"v c #FF00FF", /* magenta: cpu -> gpu copy */
+"u c #006946", /* cyan: gpu -> cpu copy */
+"v c #000000", /* magenta: cpu -> gpu copy */
 "w c #FFFF00", /* yellow: gpu -> gpu copy */
 "| c #000000", /* black: isochrone curves */
 
